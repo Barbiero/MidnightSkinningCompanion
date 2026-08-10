@@ -46,7 +46,7 @@ local function BuildFrame()
 
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     title:SetPoint("TOP", 0, -20)
-    title:SetText("Midnight Skinning Companion")
+    title:SetText(C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME)
     GrowFont(title)
     f.title = title
 
@@ -65,7 +65,7 @@ local function BuildFrame()
     end)
     optionsButton:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("Options")
+        GameTooltip:SetText(MSC.L.OPTIONS_TOOLTIP)
         GameTooltip:Show()
     end)
     optionsButton:SetScript("OnLeave", GameTooltip_Hide)
@@ -73,7 +73,7 @@ local function BuildFrame()
     -- Hidden quest section -------------------------------------------------
     local questHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     questHeader:SetPoint("TOPLEFT", 25, -55)
-    questHeader:SetText("Available Beasts")
+    questHeader:SetText(MSC.L.AVAILABLE_BEASTS)
     GrowFont(questHeader)
 
     local questList = CreateFrame("Frame", nil, f)
@@ -86,7 +86,7 @@ local function BuildFrame()
     -- Lure crafting section -------------------------------------------------
     local craftHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     craftHeader:SetPoint("TOPLEFT", questList, "BOTTOMLEFT", 0, -15)
-    craftHeader:SetText("Skinning Lures")
+    craftHeader:SetText(MSC.L.SKINNING_LURES)
     GrowFont(craftHeader)
     f.craftHeader = craftHeader
 
@@ -103,21 +103,21 @@ local function BuildFrame()
         local ahButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
         ahButton:SetSize(250, 30)
         ahButton:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -25)
-        ahButton:SetText("Auctionator Shopping List")
+        ahButton:SetText(MSC.L.AUCTIONATOR_BUTTON)
         ahButton:SetScript("OnClick", function()
             local ok, count = MSC.AuctionHouse:CreateShoppingList()
             if not ok then
-                MSC:Print("Could not create Auctionator shopping list.")
+                MSC:Print(MSC.L.MSG_AH_LIST_FAILED)
             elseif count == 0 then
-                MSC:Print("No missing lures - nothing to shop for.")
+                MSC:Print(MSC.L.MSG_AH_LIST_EMPTY)
             else
-                MSC:Print("Auctionator shopping list created with " .. count .. " reagent(s).")
+                MSC:Print(string.format(MSC.L.MSG_AH_LIST_CREATED, count))
             end
         end)
         ahButton:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOP")
-            GameTooltip:SetText("Auctionator Shopping List", 1, 1, 1)
-            GameTooltip:AddLine("Creates an Auctionator shopping list for the reagents of every lure you don't have yet.", nil, nil, nil, true)
+            GameTooltip:SetText(MSC.L.AUCTIONATOR_BUTTON, 1, 1, 1)
+            GameTooltip:AddLine(MSC.L.AUCTIONATOR_TOOLTIP, nil, nil, nil, true)
             GameTooltip:Show()
         end)
         ahButton:SetScript("OnLeave", GameTooltip_Hide)
@@ -266,7 +266,7 @@ function UI:RefreshQuestTab()
     local progress = MSC.Quests:GetProgress()
     if #progress == 0 then
         local row = AcquireRow(frame.questRows, frame.questList, 1)
-        row.label:SetText("|cff888888No hidden quests configured yet.|r")
+        row.label:SetText("|cff888888" .. MSC.L.NO_QUESTS_CONFIGURED .. "|r")
         HideRowsFrom(frame.questRows, 2)
         return
     end
@@ -276,7 +276,7 @@ function UI:RefreshQuestTab()
         local name = MSC.Names:GetBeastName(entry.key)
         local zone = MSC.Names:GetZoneName(MSC.BEAST_LOCATION[entry.key].mapID) or "?"
         row.label:SetText(color .. name .. " (" .. zone .. ")|r")
-        row.button:SetText("Waypoint")
+        row.button:SetText(MSC.L.WAYPOINT_BUTTON)
         row.button:SetScript("OnClick", function()
             MSC.Waypoint:Set(entry.key)
         end)
@@ -293,7 +293,7 @@ function UI:RefreshCraftTab()
     if #statuses == 0 then
         local row = AcquireCraftRow(frame.craftRows, frame.craftList, 1)
         row.name:SetWidth(0)
-        row.name:SetText("|cff888888No skinning beasts configured yet.|r")
+        row.name:SetText("|cff888888" .. MSC.L.NO_BEASTS_CONFIGURED .. "|r")
         HideRowsFrom(frame.craftRows, 2)
         return
     end
@@ -335,7 +335,7 @@ function UI:RefreshCraftTab()
         local price = MSC.AuctionHouse:GetLurePrice(status.key)
         row.price:SetText(price and GetCoinTextureString(price) or "")
 
-        row.button:SetText("Craft")
+        row.button:SetText(MSC.L.CRAFT_BUTTON)
         -- Greyed out exactly when the profession window's own Create
         -- button would be: missing reagents.
         row.button:SetEnabled(status.haveAll)
@@ -354,7 +354,7 @@ end
 
 function UI:Toggle()
     if not MSC.Profession:IsSkinner() then
-        MSC:Print("This addon requires the Skinning profession.")
+        MSC:Print(MSC.L.MSG_REQUIRES_SKINNING)
         self:Close()
         return
     end

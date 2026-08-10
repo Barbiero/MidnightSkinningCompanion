@@ -31,7 +31,7 @@ function Crafting:GetReagentStatus(key)
             status.haveAll = false
             status.missing[#status.missing + 1] = {
                 itemID = reagent.itemID,
-                name = MSC.Names:GetItemName(reagent.itemID) or ("Item #" .. reagent.itemID),
+                name = MSC.Names:GetItemName(reagent.itemID) or string.format(MSC.L.ITEM_FALLBACK, reagent.itemID),
                 need = reagent.required - have,
             }
         end
@@ -76,6 +76,7 @@ function Crafting:CraftLure(key)
         return
     end
     if not (C_TradeSkillUI and C_TradeSkillUI.OpenRecipe and C_TradeSkillUI.CraftRecipe) then
+        -- Should never happen on a supported client - not localized.
         MSC:Print("Profession UI API not available on this client.")
         return
     end
@@ -84,14 +85,14 @@ function Crafting:CraftLure(key)
     if wasShown and C_TradeSkillUI.GetTradeSkillLine then
         local okLine, skillLineID = pcall(C_TradeSkillUI.GetTradeSkillLine)
         if okLine and skillLineID and skillLineID ~= MSC.SKINNING_SKILL_LINE_ID then
-            MSC:Print("Close the open profession window before crafting a lure.")
+            MSC:Print(MSC.L.MSG_CLOSE_PROFESSION_WINDOW)
             return
         end
     end
 
     local okOpen, errOpen = pcall(C_TradeSkillUI.OpenRecipe, lure.craftSpellID)
     if not okOpen then
-        MSC:Print("Could not open recipe: " .. tostring(errOpen))
+        MSC:Print(string.format(MSC.L.MSG_COULD_NOT_OPEN_RECIPE, tostring(errOpen)))
         return
     end
 
@@ -100,7 +101,7 @@ function Crafting:CraftLure(key)
     -- skill requirements we don't track ourselves.
     local okInfo, recipeInfo = pcall(C_TradeSkillUI.GetRecipeInfo, lure.craftSpellID)
     if okInfo and recipeInfo and recipeInfo.craftable == false then
-        MSC:Print("Cannot craft this lure right now" ..
+        MSC:Print(MSC.L.MSG_CANNOT_CRAFT_NOW ..
             (recipeInfo.disabledReason and (": " .. recipeInfo.disabledReason) or "."))
         if ProfessionsFrame and not wasShown then
             ProfessionsFrame:Hide()
@@ -110,7 +111,7 @@ function Crafting:CraftLure(key)
 
     local okCraft, errCraft = pcall(C_TradeSkillUI.CraftRecipe, lure.craftSpellID, 1)
     if not okCraft then
-        MSC:Print("Could not craft: " .. tostring(errCraft))
+        MSC:Print(string.format(MSC.L.MSG_COULD_NOT_CRAFT, tostring(errCraft)))
     end
 
     if ProfessionsFrame and not wasShown then

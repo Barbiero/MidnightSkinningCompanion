@@ -27,12 +27,12 @@ local function AddDropdown(variable, name, tooltip, default, options, getValue, 
     Settings.CreateDropdown(category, setting, GetOptions, tooltip)
 end
 
-category = Settings.RegisterVerticalLayoutCategory("Midnight Skinning Companion")
+category = Settings.RegisterVerticalLayoutCategory(C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME)
 
 AddCheckbox(
     "MSC_LURE_OVERLAY_ENABLED",
-    "Lure Overlay",
-    "Show a popup to use a beast's lure when the game grants you Sixth Sense nearby.",
+    MSC.L.OPT_LURE_OVERLAY_NAME,
+    MSC.L.OPT_LURE_OVERLAY_TOOLTIP,
     true,
     function() return MSC.db.lureOverlayEnabled end,
     function(value)
@@ -46,8 +46,8 @@ AddCheckbox(
 
 AddCheckbox(
     "MSC_MINIMAP_ICON_SHOWN",
-    "Show Minimap Button",
-    "Show a minimap button that opens the companion window (same as the slash command).",
+    MSC.L.OPT_MINIMAP_NAME,
+    MSC.L.OPT_MINIMAP_TOOLTIP,
     false,
     function() return not MSC.db.minimapIcon.hide end,
     function(value)
@@ -58,8 +58,8 @@ AddCheckbox(
 
 AddCheckbox(
     "MSC_ADDON_COMPARTMENT_SHOWN",
-    "Show Addon Compartment Button",
-    "Show an entry in the Addon Compartment (minimap dropdown) that opens the companion window.",
+    MSC.L.OPT_COMPARTMENT_NAME,
+    MSC.L.OPT_COMPARTMENT_TOOLTIP,
     true,
     function() return MSC.db.showAddonCompartmentButton end,
     function(value)
@@ -70,8 +70,8 @@ AddCheckbox(
 
 AddDropdown(
     "MSC_UI_SCALE",
-    "Interface Size",
-    "Scales the companion window and lure popup.",
+    MSC.L.OPT_UI_SCALE_NAME,
+    MSC.L.OPT_UI_SCALE_TOOLTIP,
     1.0,
     { { value = 0.8, text = "80%" }, { value = 1.0, text = "100%" }, { value = 1.25, text = "125%" } },
     function() return MSC.db.uiScale end,

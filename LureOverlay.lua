@@ -235,8 +235,6 @@ end
 -- derived from Plumber (Modules/Shared/SharedEditMode.lua and
 -- Art/Frame/EditModeHighlighted.blp / EditModeSelected.blp).
 
-local EDIT_MODE_TITLE = "Skinning Companion Lure"
-
 local EDIT_MODE_COLOR_HIGHLIGHT = { border = { 41 / 255, 190 / 255, 1, 1 }, bg = { 151 / 255, 223 / 255, 1, 0.8 } }
 local EDIT_MODE_COLOR_SELECTED = { border = { 1, 210 / 255, 0, 1 }, bg = { 1, 245 / 255, 107 / 255, 0.8 } }
 
@@ -316,13 +314,13 @@ local function BuildEditModeSelection(f)
     local title = sel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     title:SetPoint("CENTER", sel, "CENTER", 0, 6)
     title:SetJustifyH("CENTER")
-    title:SetText(EDIT_MODE_TITLE)
+    title:SetText(MSC.L.EDIT_MODE_TITLE)
     sel.title = title
 
     local subtitle = sel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     subtitle:SetPoint("TOP", title, "BOTTOM", 0, -4)
     subtitle:SetJustifyH("CENTER")
-    subtitle:SetText("Drag to move - right-click to reset")
+    subtitle:SetText(MSC.L.EDIT_MODE_SUBTITLE)
     sel.subtitle = subtitle
 
     SetEditModeSelectionState(sel, false)
@@ -344,7 +342,7 @@ end
 -- also keeps a stray click from trying to use whatever item it last
 -- held.
 local function ShowEditModePreview(f)
-    f.label:SetText(EDIT_MODE_TITLE)
+    f.label:SetText(MSC.L.EDIT_MODE_TITLE)
     f.button.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     f.button.count:SetText("")
     f.button:SetEnabled(false)
@@ -491,15 +489,15 @@ end
 -- Debug-only: wired up from "/mscompanion lure" in Core.lua.
 function LureOverlay:DebugShow(key)
     if InCombatLockdown() then
-        MSC:Print("Can't show the lure overlay in combat.")
+        MSC:Print(MSC.L.MSG_CANT_SHOW_COMBAT)
         return
     end
     key = key or MSC.BEASTS[1]
     if not MSC.BEAST_LURE[key] then
-        MSC:Print("Unknown beast: " .. tostring(key))
+        MSC:Print(string.format(MSC.L.MSG_UNKNOWN_BEAST, tostring(key)))
         return
     end
-    ShowOverlayFor(key, " |cffff8800(debug)|r")
+    ShowOverlayFor(key, " |cffff8800(" .. MSC.L.DEBUG_LABEL .. ")|r")
 end
 
 function LureOverlay:DebugHide()

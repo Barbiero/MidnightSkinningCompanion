@@ -39,7 +39,12 @@ generally applicable rather than EllesmereUI-specific.
 
 - Lua 5.1 syntax only - no `goto` or labeled blocks.
 - ASCII only in source files - no em dashes, curly quotes, or other
-  characters that can get mangled by packaging tools.
+  characters that can get mangled by packaging tools. Exception:
+  `Locales/*.lua` and the `## Notes-<locale>:` lines in the .toc,
+  where the whole point is genuine non-English text (accents,
+  Cyrillic, Hangul, Han characters) - those files are UTF-8 by
+  necessity. The rule still applies to every other file, including
+  the English strings in `Locales/enUS.lua`.
 - Match the style of the surrounding code, especially for UI widget
   construction.
 - Keep modules isolated: a feature module should not reach into
@@ -48,17 +53,39 @@ generally applicable rather than EllesmereUI-specific.
   through each module's public functions only.
 - Don't hardcode player-facing strings for anything the client can
   give you localized (zone names, item names, etc.) - fetch them
-  through the relevant API instead. Only keep a locale table for
-  strings with no such API (e.g. creature names).
+  through the relevant API instead. Everything else player-facing
+  (UI labels, tooltips, chat messages, and beast names, which have no
+  client API) goes through `MSC.L` (see `Locale.lua`), keyed by a
+  short UPPER_SNAKE_CASE name; add the key to every file in
+  `Locales/`, not just `enUS.lua` - a missing key falls back to
+  English rather than erroring, but a translation that never gets
+  added stays English forever by accident. `MSC.L` values don't have
+  to be strings - `BEAST_NAMES` is a nested table of beast key ->
+  name for exactly this reason.
+- Error strings for conditions that should never occur on a supported
+  client (an API missing entirely, e.g. `MSG_PROFESSION_API_UNAVAILABLE`-
+  style messages) stay plain hardcoded English in the module that
+  raises them, not in `MSC.L` - translating text nobody is expected to
+  ever see just adds upkeep for no player benefit.
 
 ## Structure
 
 - `Core.lua` - namespace setup, saved variables, slash command. Load
   first.
 - `Constants.lua` - pure data tables. No logic, no side effects.
+- `Locale.lua` - owns the `MSC.L` string table and its registration
+  function; loads before `Locales/*.lua` and before every module that
+  reads a player-facing string. `MSC.L` falls back client-locale ->
+  enUS -> the key itself, so a missing translation degrades to
+  English instead of erroring.
+- `Locales/*.lua` - one file per supported client locale (enUS,
+  deDE, esES, esMX, frFR, itIT, ptBR, ruRU, koKR, zhCN, zhTW), each
+  calling `MSC.Locale:Register(localeCode, { KEY = "..." })`, including
+  a `BEAST_NAMES` sub-table. Add new keys to every file, not just
+  `enUS.lua`.
 - `Names.lua` - display-name resolution (zone/item names from client
-  APIs, beast names from a small locale table). No other module
-  keeps its own copy of a display string.
+  APIs, beast names from `MSC.L.BEAST_NAMES`). No other module keeps
+  its own copy of a display string.
 - `Profession.lua` - detects whether the player has learned Skinning.
   `Core.lua` subscribes to changes and drives every feature module's
   Enable/Disable from them; a module may also call

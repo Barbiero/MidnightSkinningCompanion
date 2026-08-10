@@ -12,6 +12,7 @@ function Waypoint:Set(key)
         return
     end
     if not (C_Map and C_Map.SetUserWaypoint) then
+        -- Should never happen on a supported client - not localized.
         MSC:Print("Waypoint API not available on this client.")
         return
     end

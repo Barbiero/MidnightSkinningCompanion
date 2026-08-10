@@ -6,7 +6,7 @@ MSC.AuctionHouse = AuctionHouse
 -- Auctionator integration only. We never touch C_AuctionHouse or the
 -- AHDB ourselves beyond reading Auctionator's already-scanned price
 -- cache - fetching live AH data stays Auctionator's job.
-local SHOPPING_LIST_NAME = "MSC: Skinning Lures"
+local SHOPPING_LIST_NAME = "MSC: " .. MSC.L.SKINNING_LURES
 
 function AuctionHouse:IsAuctionatorLoaded()
     return C_AddOns.IsAddOnLoaded("Auctionator") == true
