@@ -6,21 +6,26 @@ MSC.LureOverlay = LureOverlay
 -- ============================================================
 -- Proximity overlay for using a skinning lure.
 --
--- Nothing here exists until the player ticks the "Lure Overlay"
--- checkbox in the UI - MSC.db.lureOverlayEnabled defaults to false.
+-- On by default (MSC.db.lureOverlayEnabled); nothing here exists
+-- until Enable() actually runs, whether that's at login restoring a
+-- prior session or the player flipping the Options checkbox.
 --
--- Detection is event-driven, not polled: the game applies
--- MSC.SIXTH_SENSE_SPELL_ID to the player when a lure can be used
+-- Detection is event-driven, not polled: the game applies one of
+-- MSC.SIXTH_SENSE_SPELL_IDS to the player when a lure can be used
 -- here, so a single UNIT_AURA listener on "player" tells us when to
 -- look, instead of a repeating ticker checking position every
 -- second. Zone + quest completion then narrow that down to a beast;
 -- a one-off distance check only runs to break a tie between beasts
 -- that share a zone.
+--
+-- Checks are skipped while in combat and re-run once combat ends:
+-- building/showing the overlay while combat lockdown is active is a
+-- plausible taint source, and the debuff can easily land mid-fight.
 -- ============================================================
 
 local listenerFrame
 local overlayFrame
-local currentKey
+local pendingRecheck = false
 
 local function GetLureCount(itemID)
     if not itemID then
@@ -90,24 +95,16 @@ local function FindTargetKey()
     return NearestCandidate(candidates, mapID)
 end
 
--- Called only from the overlay button's OnClick, i.e. always as a
--- direct player action - never queued or triggered by addon logic
--- on its own, so this carries no taint risk.
-local function UseLure(key)
-    local lure = MSC.BEAST_LURE[key]
-    if not lure then
-        return
-    end
-    if GetLureCount(lure.itemID) <= 0 then
-        MSC:Print("No " .. MSC.Names:GetBeastName(key) .. " lure in your bags.")
-        return
-    end
-    local ok, err = pcall(UseItemByName, lure.itemID)
-    if not ok then
-        MSC:Print("Could not use lure: " .. tostring(err))
-    end
-end
-
+-- The lure is ground-targeted, and item use in general is only
+-- permitted through a real hardware click on a secure action button
+-- - calling UseItemByName from Lua, even directly from an OnClick
+-- script, is ADDON_ACTION_FORBIDDEN. So the button below is a
+-- SecureActionButtonTemplate with its "item" attribute pointed at
+-- the current lure; Blizzard's own secure click handling takes it
+-- from there; the player still places the ground target themselves,
+-- same as using the item manually. SetAttribute is itself combat
+-- protected, which is why this is only ever called from
+-- OnPlayerAurasChanged, which already refuses to run in combat.
 local function BuildOverlay()
     local f = CreateFrame("Frame", "MidnightSkinningCompanionLureOverlay", UIParent, "BackdropTemplate")
     f:SetSize(220, 70)
@@ -123,15 +120,12 @@ local function BuildOverlay()
     label:SetPoint("TOP", 0, -10)
     f.label = label
 
-    local button = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+    local button = CreateFrame("Button", "MidnightSkinningCompanionLureOverlayButton", f, "SecureActionButtonTemplate, UIPanelButtonTemplate")
     button:SetSize(140, 24)
     button:SetPoint("BOTTOM", 0, 10)
     button:SetText("Use Lure")
-    button:SetScript("OnClick", function()
-        if currentKey then
-            UseLure(currentKey)
-        end
-    end)
+    button:RegisterForClicks("AnyUp", "AnyDown")
+    button:SetAttribute("type", "item")
     f.button = button
 
     f:Hide()
@@ -139,13 +133,22 @@ local function BuildOverlay()
 end
 
 local function HasSixthSense()
-    return C_UnitAuras.GetPlayerAuraBySpellID(MSC.SIXTH_SENSE_SPELL_ID) ~= nil
+    for _, spellID in ipairs(MSC.SIXTH_SENSE_SPELL_IDS) do
+        if C_UnitAuras.GetPlayerAuraBySpellID(spellID) then
+            return true
+        end
+    end
+    return false
 end
 
 local function OnPlayerAurasChanged()
+    if InCombatLockdown() then
+        pendingRecheck = true
+        return
+    end
+
     local key = HasSixthSense() and FindTargetKey() or nil
     if not key then
-        currentKey = nil
         if overlayFrame then
             overlayFrame:Hide()
         end
@@ -155,9 +158,10 @@ local function OnPlayerAurasChanged()
     if not overlayFrame then
         overlayFrame = BuildOverlay()
     end
-    currentKey = key
-    local count = GetLureCount(MSC.BEAST_LURE[key].itemID)
+    local lure = MSC.BEAST_LURE[key]
+    local count = GetLureCount(lure.itemID)
     overlayFrame.label:SetText(MSC.Names:GetBeastName(key) .. " lure: " .. count)
+    overlayFrame.button:SetAttribute("item", "item:" .. lure.itemID)
     overlayFrame.button:SetEnabled(count > 0)
     overlayFrame:Show()
 end
@@ -170,13 +174,25 @@ function LureOverlay:OnLogin()
     end
 end
 
+local function OnEvent(_, event)
+    if event == "PLAYER_REGEN_ENABLED" then
+        if pendingRecheck then
+            pendingRecheck = false
+            OnPlayerAurasChanged()
+        end
+    else
+        OnPlayerAurasChanged()
+    end
+end
+
 function LureOverlay:Enable()
     if listenerFrame then
         return
     end
     listenerFrame = CreateFrame("Frame")
     listenerFrame:RegisterUnitEvent("UNIT_AURA", "player")
-    listenerFrame:SetScript("OnEvent", OnPlayerAurasChanged)
+    listenerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    listenerFrame:SetScript("OnEvent", OnEvent)
     MSC.db.lureOverlayEnabled = true
     -- Covers the case where the player enables this while already
     -- standing in range with the debuff up.
@@ -192,7 +208,7 @@ function LureOverlay:Disable()
     if overlayFrame then
         overlayFrame:Hide()
     end
-    currentKey = nil
+    pendingRecheck = false
     MSC.db.lureOverlayEnabled = false
 end
 

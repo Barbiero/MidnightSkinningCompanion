@@ -35,26 +35,26 @@ local function BuildFrame()
     close:SetPoint("TOPRIGHT", -4, -4)
     close:SetScript("OnClick", function() f:Hide() end)
 
+    local optionsButton = CreateFrame("Button", nil, f)
+    optionsButton:SetSize(20, 20)
+    optionsButton:SetPoint("RIGHT", close, "LEFT", -2, 0)
+    optionsButton:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
+    optionsButton:SetPushedTexture("Interface\\Buttons\\UI-OptionsButton")
+    optionsButton:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", "ADD")
+    optionsButton:SetScript("OnClick", function()
+        MSC.Options:Open()
+    end)
+    optionsButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText("Options")
+        GameTooltip:Show()
+    end)
+    optionsButton:SetScript("OnLeave", GameTooltip_Hide)
+
     -- Hidden quest section -------------------------------------------------
     local questHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     questHeader:SetPoint("TOPLEFT", 20, -44)
-    questHeader:SetText("Hidden Quests")
-
-    local trackToggle = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
-    trackToggle:SetPoint("LEFT", questHeader, "RIGHT", 8, 0)
-    local toggleLabel = _G[trackToggle:GetName() .. "Text"]
-    if toggleLabel then
-        toggleLabel:SetText("Track")
-    end
-    trackToggle:SetChecked(MSC.db.trackingEnabled)
-    trackToggle:SetScript("OnClick", function(btn)
-        if btn:GetChecked() then
-            MSC.Quests:StartTracking()
-        else
-            MSC.Quests:StopTracking()
-        end
-    end)
-    f.trackToggle = trackToggle
+    questHeader:SetText("Available Beasts")
 
     local questList = CreateFrame("Frame", nil, f)
     questList:SetPoint("TOPLEFT", 20, -66)
@@ -76,31 +76,10 @@ local function BuildFrame()
     f.craftList = craftList
     f.craftRows = {}
 
-    -- Lure overlay section ---------------------------------------------------
-    local overlayHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    overlayHeader:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -12)
-    overlayHeader:SetText("Lure Overlay")
-
-    local overlayToggle = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
-    overlayToggle:SetPoint("LEFT", overlayHeader, "RIGHT", 8, 0)
-    local overlayToggleLabel = _G[overlayToggle:GetName() .. "Text"]
-    if overlayToggleLabel then
-        overlayToggleLabel:SetText("Show when near a beast")
-    end
-    overlayToggle:SetChecked(MSC.db.lureOverlayEnabled)
-    overlayToggle:SetScript("OnClick", function(btn)
-        if btn:GetChecked() then
-            MSC.LureOverlay:Enable()
-        else
-            MSC.LureOverlay:Disable()
-        end
-    end)
-    f.overlayToggle = overlayToggle
-
     -- Auction house section (stub, greyed out) -----------------------------
     local ahButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
     ahButton:SetSize(200, 24)
-    ahButton:SetPoint("BOTTOM", 0, 16)
+    ahButton:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -20)
     ahButton:SetText("Fetch Materials from AH")
     ahButton:SetEnabled(false)
     ahButton:SetScript("OnEnter", function(self)
@@ -159,7 +138,7 @@ function UI:RefreshQuestTab()
     end
     for i, entry in ipairs(progress) do
         local row = AcquireRow(frame.questRows, frame.questList, i)
-        local color = entry.completed and "|cff33ff33" or "|cffffffff"
+        local color = entry.completed and "|cffff5555" or "|cff33ff33"
         local name = MSC.Names:GetBeastName(entry.key)
         local zone = MSC.Names:GetZoneName(MSC.BEAST_LOCATION[entry.key].mapID) or "?"
         row.label:SetText(color .. name .. " (" .. zone .. ")|r")

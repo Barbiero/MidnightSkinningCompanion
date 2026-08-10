@@ -1,6 +1,7 @@
 local ADDON_NAME, MSC = ...
 
-MSC.SIXTH_SENSE_SPELL_ID = 1239120
+-- Multiple ranks/variants exist per location; treat any as "in range".
+MSC.SIXTH_SENSE_SPELL_IDS = { 1239058, 1239120, 1239121, 1239122, 1239151 }
 
 MSC.BEASTS = { "gloomclaw", "silverscale", "lumenfin", "umbrafang", "netherscythe" }
 

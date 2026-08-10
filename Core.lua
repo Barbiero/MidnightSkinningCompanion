@@ -17,14 +17,12 @@ MSC.IS_121 = tocVersion >= 120100
 -- ============================================================
 -- Saved variables / defaults.
 --
--- trackingEnabled defaults to false on purpose: opening the addon
--- for the first time must not silently start registering gameplay
--- events. The player opts in from the UI (see UI.lua's Track
--- checkbox), and only then does Quests.lua register anything.
+-- lureOverlayEnabled defaults to true: it's the addon's other core
+-- feature, and off is an opt-out (Options > Lure Overlay), not an
+-- opt-in.
 -- ============================================================
 local DEFAULTS = {
-    trackingEnabled = false,
-    lureOverlayEnabled = false,
+    lureOverlayEnabled = true,
     minimapIcon = { hide = false },
 }
 
@@ -67,11 +65,10 @@ rootFrame:SetScript("OnEvent", function(_, event, ...)
 end)
 
 function MSC:OnPlayerLogin()
-    -- Modules may re-arm listeners the player had already opted
-    -- into in a previous session. This must never turn a feature on
-    -- for the first time by itself, only restore an existing choice.
-    -- Quests and LureOverlay are independent opt-ins, so each is
-    -- restored on its own - one being on must never turn the other on.
+    -- Quests always tracks. LureOverlay restores the player's own
+    -- prior choice (defaults to on, but Options > Lure Overlay can
+    -- turn it off) - each module's startup is independent, so one
+    -- must never turn the other on or off as a side effect.
     if MSC.Quests and MSC.Quests.OnLogin then
         MSC.Quests:OnLogin()
     end
@@ -83,7 +80,7 @@ end
 -- ============================================================
 -- Slash command - the only entry point that builds the UI.
 -- ============================================================
-SLASH_MIDNIGHTSKINNINGCOMPANION1 = "/msc"
+SLASH_MIDNIGHTSKINNINGCOMPANION1 = "/mscompanion"
 SLASH_MIDNIGHTSKINNINGCOMPANION2 = "/skinningcompanion"
 SlashCmdList["MIDNIGHTSKINNINGCOMPANION"] = function(msg)
     if MSC.UI then

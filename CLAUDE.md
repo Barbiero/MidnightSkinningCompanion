@@ -57,6 +57,10 @@ generally applicable rather than EllesmereUI-specific.
 - Feature modules (`Quests.lua`, `Crafting.lua`, `Waypoint.lua`,
   `LureOverlay.lua`, `AuctionHouse.lua`, ...) - one concern each,
   each exposing a small public API on its own table (`MSC.<Module>`).
+- `Options.lua` - all player-facing configuration, registered through
+  the Settings API (`Settings.RegisterAddOnCategory`), not a custom
+  frame. Toggling a feature on/off always goes through this panel.
 - `UI.lua` - the only module allowed to build visible frames tied to
   more than one feature module; it reads from and calls into feature
-  modules but never contains feature logic itself.
+  modules but never contains feature logic itself. It shows data, it
+  doesn't configure anything - that's Options.lua's job.

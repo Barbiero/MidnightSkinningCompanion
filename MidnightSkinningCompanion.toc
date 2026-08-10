@@ -20,4 +20,5 @@ Crafting.lua
 Waypoint.lua
 LureOverlay.lua
 AuctionHouse.lua
+Options.lua
 UI.lua
