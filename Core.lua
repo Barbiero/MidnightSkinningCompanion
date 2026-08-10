@@ -65,15 +65,49 @@ rootFrame:SetScript("OnEvent", function(_, event, ...)
 end)
 
 function MSC:OnPlayerLogin()
-    -- Quests always tracks. LureOverlay restores the player's own
-    -- prior choice (defaults to on, but Options > Lure Overlay can
-    -- turn it off) - each module's startup is independent, so one
-    -- must never turn the other on or off as a side effect.
-    if MSC.Quests and MSC.Quests.OnLogin then
-        MSC.Quests:OnLogin()
+    MSC.Profession:OnLogin(function(isSkinner)
+        MSC:SetFeaturesEnabled(isSkinner)
+    end)
+    -- Snapshot at login only - a player who learns Skinning mid-
+    -- session gets the rest of the addon live (see SetFeaturesEnabled)
+    -- but not this icon, since the Addon Compartment has no supported
+    -- way to remove an entry once registered.
+    if MSC.Profession:IsSkinner() then
+        MSC:RegisterAddonCompartment()
     end
-    if MSC.LureOverlay and MSC.LureOverlay.OnLogin then
-        MSC.LureOverlay:OnLogin()
+end
+
+-- The addon is inert for a non-skinner and live for a skinner - this
+-- is the only place that decision gets made. Fires once at login and
+-- again any time MSC.Profession detects the player's Skinning status
+-- has flipped (e.g. they just learned it). LureOverlay restores the
+-- player's own prior choice (defaults to on, but Options > Lure
+-- Overlay can turn it off) rather than being forced on - each
+-- module's startup is independent, so one must never turn the other
+-- on or off as a side effect.
+function MSC:SetFeaturesEnabled(enabled)
+    if MSC.featuresEnabled == enabled then
+        return
+    end
+    MSC.featuresEnabled = enabled
+
+    if enabled then
+        if MSC.Quests then
+            MSC.Quests:Enable()
+        end
+        if MSC.LureOverlay then
+            MSC.LureOverlay:OnProfessionGained()
+        end
+    else
+        if MSC.Quests then
+            MSC.Quests:Disable()
+        end
+        if MSC.LureOverlay then
+            MSC.LureOverlay:OnProfessionLost()
+        end
+        if MSC.UI then
+            MSC.UI:Close()
+        end
     end
 end
 
@@ -88,12 +122,27 @@ SlashCmdList["MIDNIGHTSKINNINGCOMPANION"] = function(msg)
     end
 end
 
--- Referenced by name from the TOC's AddonCompartmentFunc - must stay
--- global. Same action as the slash command.
-function MSC_OnAddonCompartmentClick()
+local function OnAddonCompartmentClick()
     if MSC.UI then
         MSC.UI:Toggle()
     end
+end
+
+-- Registers the Addon Compartment icon by hand instead of through
+-- the TOC's AddonCompartmentFunc, which would register unconditionally
+-- for every player at load - before MSC.Profession even knows whether
+-- they're a skinner. Only called once, from OnPlayerLogin, and only
+-- for a skinner.
+function MSC:RegisterAddonCompartment()
+    if not AddonCompartmentFrame then
+        return
+    end
+    AddonCompartmentFrame:RegisterAddon({
+        text = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME,
+        icon = C_AddOns.GetAddOnMetadata(ADDON_NAME, "IconTexture"),
+        notCheckable = true,
+        func = OnAddonCompartmentClick,
+    })
 end
 
 function MSC:Print(msg)

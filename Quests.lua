@@ -28,11 +28,27 @@ local function OnTrackedEvent()
     end
 end
 
--- Called from Core:OnPlayerLogin(). Always on: tracking the hidden
--- quest line is this addon's core purpose, not an opt-in feature.
-function Quests:OnLogin()
+-- Called from MSC:SetFeaturesEnabled() whenever the player is (or
+-- becomes) a skinner. Not an opt-in feature in its own right, but
+-- gated entirely on MSC.Profession - tracking a hidden quest line
+-- that requires Skinning is pointless for anyone else.
+function Quests:Enable()
+    if listenerFrame then
+        return
+    end
     listenerFrame = CreateFrame("Frame")
     listenerFrame:RegisterEvent("CRITERIA_UPDATE")
     listenerFrame:RegisterEvent("QUEST_TURNED_IN")
     listenerFrame:SetScript("OnEvent", OnTrackedEvent)
+end
+
+-- Called from MSC:SetFeaturesEnabled() if the player is not (or no
+-- longer) a skinner.
+function Quests:Disable()
+    if not listenerFrame then
+        return
+    end
+    listenerFrame:UnregisterAllEvents()
+    listenerFrame:SetScript("OnEvent", nil)
+    listenerFrame = nil
 end

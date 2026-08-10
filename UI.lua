@@ -337,6 +337,11 @@ function UI:Refresh()
 end
 
 function UI:Toggle()
+    if not MSC.Profession:IsSkinner() then
+        MSC:Print("This addon requires the Skinning profession.")
+        self:Close()
+        return
+    end
     if not frame then
         frame = BuildFrame()
     end
@@ -345,6 +350,15 @@ function UI:Toggle()
     else
         frame:Show()
         self:Refresh()
+    end
+end
+
+-- Called from MSC:SetFeaturesEnabled() if the player is not (or no
+-- longer) a skinner, so the window doesn't linger open showing dead
+-- data (e.g. after a profession swap mid-session).
+function UI:Close()
+    if frame and frame:IsShown() then
+        frame:Hide()
     end
 end
 

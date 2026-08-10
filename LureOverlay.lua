@@ -166,14 +166,6 @@ local function OnPlayerAurasChanged()
     overlayFrame:Show()
 end
 
--- Called from Core:OnPlayerLogin(). Restores the player's own prior
--- choice; does not turn the overlay on for someone who never asked.
-function LureOverlay:OnLogin()
-    if MSC.db.lureOverlayEnabled then
-        self:Enable()
-    end
-end
-
 local function OnEvent(_, event)
     if event == "PLAYER_REGEN_ENABLED" then
         if pendingRecheck then
@@ -185,7 +177,11 @@ local function OnEvent(_, event)
     end
 end
 
-function LureOverlay:Enable()
+-- Mechanism only - never touches MSC.db.lureOverlayEnabled. That
+-- keeps the player's own preference intact regardless of how many
+-- times MSC.Profession starts/stops this around a Skinning gain or
+-- loss; only the user-facing Enable()/Disable() below persist it.
+local function StartListening()
     if listenerFrame then
         return
     end
@@ -193,13 +189,12 @@ function LureOverlay:Enable()
     listenerFrame:RegisterUnitEvent("UNIT_AURA", "player")
     listenerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
     listenerFrame:SetScript("OnEvent", OnEvent)
-    MSC.db.lureOverlayEnabled = true
-    -- Covers the case where the player enables this while already
-    -- standing in range with the debuff up.
+    -- Covers the case where listening starts while already standing
+    -- in range with the debuff up.
     OnPlayerAurasChanged()
 end
 
-function LureOverlay:Disable()
+local function StopListening()
     if listenerFrame then
         listenerFrame:UnregisterAllEvents()
         listenerFrame:SetScript("OnEvent", nil)
@@ -209,7 +204,37 @@ function LureOverlay:Disable()
         overlayFrame:Hide()
     end
     pendingRecheck = false
+end
+
+-- Called from MSC:SetFeaturesEnabled() when the player is (or
+-- becomes) a skinner. Restores the player's own prior choice; does
+-- not turn the overlay on for someone who never asked.
+function LureOverlay:OnProfessionGained()
+    if MSC.db.lureOverlayEnabled then
+        StartListening()
+    end
+end
+
+-- Called from MSC:SetFeaturesEnabled() when the player is not (or no
+-- longer) a skinner. Leaves the saved preference alone so regaining
+-- Skinning later restores exactly what the player had before.
+function LureOverlay:OnProfessionLost()
+    StopListening()
+end
+
+-- User-facing toggle (Options > Lure Overlay). Persists the choice
+-- even if the player isn't currently a skinner, so it takes effect
+-- immediately if they later learn Skinning.
+function LureOverlay:Enable()
+    MSC.db.lureOverlayEnabled = true
+    if MSC.Profession:IsSkinner() then
+        StartListening()
+    end
+end
+
+function LureOverlay:Disable()
     MSC.db.lureOverlayEnabled = false
+    StopListening()
 end
 
 function LureOverlay:IsEnabled()

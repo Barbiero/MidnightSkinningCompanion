@@ -59,6 +59,12 @@ generally applicable rather than EllesmereUI-specific.
 - `Names.lua` - display-name resolution (zone/item names from client
   APIs, beast names from a small locale table). No other module
   keeps its own copy of a display string.
+- `Profession.lua` - detects whether the player has learned Skinning.
+  `Core.lua` subscribes to changes and drives every feature module's
+  Enable/Disable from them; a module may also call
+  `MSC.Profession:IsSkinner()` directly for a one-off, user-initiated
+  check (e.g. before opening the UI), but must never register its
+  own listener for it - that stays centralized in `Profession.lua`.
 - Feature modules (`Quests.lua`, `Crafting.lua`, `Waypoint.lua`,
   `LureOverlay.lua`, `AuctionHouse.lua`, ...) - one concern each,
   each exposing a small public API on its own table (`MSC.<Module>`).

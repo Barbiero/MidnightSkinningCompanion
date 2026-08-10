@@ -6,17 +6,18 @@
 ## SavedVariables: MidnightSkinningCompanionDB
 ## IconTexture: Interface\Icons\INV_Misc_Pelt_Wolf_01
 ## Category: Professions
-## AddonCompartmentFunc: MSC_OnAddonCompartmentClick
 
 # Load order matters: Core sets up the namespace and saved
-# variables, Constants holds pure data, the feature modules depend
-# on both, and UI depends on every feature module existing first.
-# Waypoint.lua and LureOverlay.lua are independent of each other -
-# neither calls into the other - so their relative order here
-# doesn't matter.
+# variables, Constants holds pure data, Profession gates every
+# feature module behind having learned Skinning, the feature modules
+# depend on all three, and UI depends on every feature module
+# existing first. Waypoint.lua and LureOverlay.lua are independent of
+# each other - neither calls into the other - so their relative
+# order here doesn't matter.
 Core.lua
 Constants.lua
 Names.lua
+Profession.lua
 Quests.lua
 Crafting.lua
 Waypoint.lua
