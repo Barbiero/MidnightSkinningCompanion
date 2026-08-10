@@ -104,6 +104,28 @@ local function GrowFont(fontString)
     end
 end
 
+-- Reposition support (see LureOverlay:EnterEditMode below). Stored as
+-- a single point/x/y relative to UIParent - the same anchor family
+-- the overlay is always built with - so applying a saved position is
+-- just a SetPoint, no coordinate conversion.
+local function ApplyPosition(f)
+    f:ClearAllPoints()
+    local pos = MSC.db.lureOverlayPoint
+    if pos then
+        f:SetPoint(pos.point, UIParent, pos.point, pos.x, pos.y)
+    else
+        f:SetPoint("TOP", 0, -150)
+    end
+end
+
+local function SavePosition(f)
+    local point, _, _, x, y = f:GetPoint(1)
+    if not point then
+        return
+    end
+    MSC.db.lureOverlayPoint = { point = point, x = x, y = y }
+end
+
 -- Item use requires a real hardware click on a SecureActionButtonTemplate
 -- with its "item" attribute set - calling UseItemByName from Lua is
 -- ADDON_ACTION_FORBIDDEN. SetAttribute is itself combat protected,
@@ -114,9 +136,11 @@ end
 local function BuildOverlay()
     local f = CreateFrame("Frame", "MidnightSkinningCompanionLureOverlay", UIParent)
     f:SetSize(320, 200)
-    f:SetPoint("TOP", 0, -150)
+    ApplyPosition(f)
     f:SetFrameStrata("HIGH")
     f:SetScale(MSC.db.uiScale or 1.0)
+    f:SetMovable(true)
+    f:SetClampedToScreen(true)
 
     local label = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     label:SetPoint("TOP", 0, 0)
@@ -207,6 +231,170 @@ local function OnPlayerAurasChanged()
     ShowOverlayFor(key)
 end
 
+-- Repositioning via Blizzard's Edit Mode - approach and colors
+-- derived from Plumber (Modules/Shared/SharedEditMode.lua and
+-- Art/Frame/EditModeHighlighted.blp / EditModeSelected.blp).
+
+local EDIT_MODE_TITLE = "Skinning Companion Lure"
+
+local EDIT_MODE_COLOR_HIGHLIGHT = { border = { 41 / 255, 190 / 255, 1, 1 }, bg = { 151 / 255, 223 / 255, 1, 0.8 } }
+local EDIT_MODE_COLOR_SELECTED = { border = { 1, 210 / 255, 0, 1 }, bg = { 1, 245 / 255, 107 / 255, 0.8 } }
+
+local EDIT_MODE_BACKDROP = {
+    bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile = true,
+    tileSize = 16,
+    edgeSize = 16,
+    insets = { left = 5, right = 5, top = 5, bottom = 5 },
+}
+
+local function SetEditModeSelectionState(sel, selected)
+    local colors = selected and EDIT_MODE_COLOR_SELECTED or EDIT_MODE_COLOR_HIGHLIGHT
+    sel:SetBackdropColor(unpack(colors.bg))
+    sel:SetBackdropBorderColor(unpack(colors.border))
+    sel.subtitle:SetShown(not selected)
+end
+
+local function OnEditModeSelectionMouseDown(self, button)
+    if button == "LeftButton" then
+        SetEditModeSelectionState(self, true)
+        if EditModeManagerFrame and EditModeManagerFrame.ClearSelectedSystem then
+            EditModeManagerFrame:ClearSelectedSystem()
+        end
+    end
+end
+
+local function OnEditModeSelectionMouseUp(self, button)
+    if button == "RightButton" then
+        LureOverlay:ResetPosition()
+    end
+end
+
+local function OnEditModeSelectionDragStart(self)
+    self:GetParent():StartMoving()
+end
+
+local function OnEditModeSelectionDragStop(self)
+    local f = self:GetParent()
+    f:StopMovingOrSizing()
+    SavePosition(f)
+end
+
+-- Deselects (back to the highlighted/blue state) on any click that
+-- doesn't land on this frame - the same technique Plumber uses for
+-- its own Edit Mode selections.
+local function OnEditModeSelectionEvent(self, event)
+    if event == "GLOBAL_MOUSE_DOWN" then
+        local foci = GetMouseFoci()
+        if not (foci and foci[1] == self) then
+            SetEditModeSelectionState(self, false)
+        end
+    end
+end
+
+local function OnEditModeSelectionShow(self)
+    self:RegisterEvent("GLOBAL_MOUSE_DOWN")
+end
+
+local function OnEditModeSelectionHide(self)
+    self:UnregisterEvent("GLOBAL_MOUSE_DOWN")
+end
+
+local function BuildEditModeSelection(f)
+    local sel = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    sel:SetPoint("TOPLEFT", f, "TOPLEFT", 0, 0)
+    sel:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", 0, 40)
+    sel:SetFrameStrata(f:GetFrameStrata())
+    sel:SetToplevel(true)
+    sel:SetFrameLevel(999)
+    sel:EnableMouse(true)
+    sel:RegisterForDrag("LeftButton")
+    sel:SetBackdrop(EDIT_MODE_BACKDROP)
+    sel:Hide()
+
+    local title = sel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    title:SetPoint("CENTER", sel, "CENTER", 0, 6)
+    title:SetJustifyH("CENTER")
+    title:SetText(EDIT_MODE_TITLE)
+    sel.title = title
+
+    local subtitle = sel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    subtitle:SetPoint("TOP", title, "BOTTOM", 0, -4)
+    subtitle:SetJustifyH("CENTER")
+    subtitle:SetText("Drag to move - right-click to reset")
+    sel.subtitle = subtitle
+
+    SetEditModeSelectionState(sel, false)
+
+    sel:SetScript("OnMouseDown", OnEditModeSelectionMouseDown)
+    sel:SetScript("OnMouseUp", OnEditModeSelectionMouseUp)
+    sel:SetScript("OnDragStart", OnEditModeSelectionDragStart)
+    sel:SetScript("OnDragStop", OnEditModeSelectionDragStop)
+    sel:SetScript("OnEvent", OnEditModeSelectionEvent)
+    sel:SetScript("OnShow", OnEditModeSelectionShow)
+    sel:SetScript("OnHide", OnEditModeSelectionHide)
+
+    f.editModeSelection = sel
+    return sel
+end
+
+-- Placeholder content shown while forced onscreen for repositioning;
+-- there may be no real beast in range to show. Disabling the button
+-- also keeps a stray click from trying to use whatever item it last
+-- held.
+local function ShowEditModePreview(f)
+    f.label:SetText(EDIT_MODE_TITLE)
+    f.button.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+    f.button.count:SetText("")
+    f.button:SetEnabled(false)
+    f:Show()
+end
+
+-- Called from the EditMode.Enter callback, only registered while the
+-- overlay feature itself is enabled (see StartListening) - repositioning
+-- something that's off has nothing to show.
+function LureOverlay:EnterEditMode()
+    if InCombatLockdown() then
+        return
+    end
+    if not overlayFrame then
+        overlayFrame = BuildOverlay()
+    end
+    if not overlayFrame.editModeSelection then
+        BuildEditModeSelection(overlayFrame)
+    end
+    ShowEditModePreview(overlayFrame)
+    SetEditModeSelectionState(overlayFrame.editModeSelection, false)
+    overlayFrame.editModeSelection:Show()
+end
+
+function LureOverlay:ExitEditMode()
+    if not overlayFrame or not overlayFrame.editModeSelection then
+        return
+    end
+    overlayFrame.editModeSelection:Hide()
+    -- Recompute the real state instead of just hiding - covers the
+    -- (rare) case where the player actually has a lure available
+    -- while Edit Mode happens to be open.
+    OnPlayerAurasChanged()
+end
+
+function LureOverlay:ResetPosition()
+    MSC.db.lureOverlayPoint = nil
+    if overlayFrame then
+        ApplyPosition(overlayFrame)
+    end
+end
+
+local function OnEditModeEnter()
+    LureOverlay:EnterEditMode()
+end
+
+local function OnEditModeExit()
+    LureOverlay:ExitEditMode()
+end
+
 local function OnEvent(_, event)
     if event == "PLAYER_REGEN_ENABLED" then
         if pendingRecheck then
@@ -230,9 +418,16 @@ local function StartListening()
     listenerFrame:RegisterUnitEvent("UNIT_AURA", "player")
     listenerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
     listenerFrame:SetScript("OnEvent", OnEvent)
+    EventRegistry:RegisterCallback("EditMode.Enter", OnEditModeEnter, LureOverlay)
+    EventRegistry:RegisterCallback("EditMode.Exit", OnEditModeExit, LureOverlay)
     -- Covers the case where listening starts while already standing
     -- in range with the debuff up.
     OnPlayerAurasChanged()
+    -- Covers the case where the feature is turned on (e.g. from
+    -- Options) while Edit Mode already happens to be open.
+    if EditModeManagerFrame and EditModeManagerFrame:IsEditModeActive() then
+        LureOverlay:EnterEditMode()
+    end
 end
 
 local function StopListening()
@@ -240,6 +435,11 @@ local function StopListening()
         listenerFrame:UnregisterAllEvents()
         listenerFrame:SetScript("OnEvent", nil)
         listenerFrame = nil
+    end
+    EventRegistry:UnregisterCallback("EditMode.Enter", LureOverlay)
+    EventRegistry:UnregisterCallback("EditMode.Exit", LureOverlay)
+    if overlayFrame and overlayFrame.editModeSelection then
+        overlayFrame.editModeSelection:Hide()
     end
     if overlayFrame then
         overlayFrame:Hide()
