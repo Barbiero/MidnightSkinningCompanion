@@ -7,13 +7,15 @@
 ## IconTexture: Interface\Icons\INV_Misc_Pelt_Wolf_01
 ## Category: Professions
 
-# Load order matters: Core sets up the namespace and saved
-# variables, Constants holds pure data, Profession gates every
-# feature module behind having learned Skinning, the feature modules
-# depend on all three, and UI depends on every feature module
-# existing first. Waypoint.lua and LureOverlay.lua are independent of
-# each other - neither calls into the other - so their relative
-# order here doesn't matter.
+# Load order matters: Libs first (LibStub + embedded libraries have no
+# dependency on our own namespace and must exist before Core.lua uses
+# them), then Core sets up the namespace and saved variables, Constants
+# holds pure data, Profession gates every feature module behind having
+# learned Skinning, the feature modules depend on all three, and UI
+# depends on every feature module existing first. Waypoint.lua and
+# LureOverlay.lua are independent of each other - neither calls into
+# the other - so their relative order here doesn't matter.
+Libs\Libs.xml
 Core.lua
 Constants.lua
 Names.lua

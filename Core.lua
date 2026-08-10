@@ -19,11 +19,16 @@ MSC.IS_121 = tocVersion >= 120100
 --
 -- lureOverlayEnabled defaults to true: it's the addon's other core
 -- feature, and off is an opt-out (Options > Lure Overlay), not an
--- opt-in.
+-- opt-in. uiScale is a straight multiplier on top of the addon's own
+-- built-in layout, which is already sized 25% larger than the
+-- addon's original geometry - see Options.lua's Interface Size
+-- dropdown.
 -- ============================================================
 local DEFAULTS = {
     lureOverlayEnabled = true,
-    minimapIcon = { hide = false },
+    minimapIcon = { hide = true },
+    showAddonCompartmentButton = true,
+    uiScale = 1.0,
 }
 
 local function CopyDefaults(dst, src)
@@ -70,10 +75,10 @@ function MSC:OnPlayerLogin()
     end)
     -- Snapshot at login only - a player who learns Skinning mid-
     -- session gets the rest of the addon live (see SetFeaturesEnabled)
-    -- but not this icon, since the Addon Compartment has no supported
-    -- way to remove an entry once registered.
+    -- but not these icons.
     if MSC.Profession:IsSkinner() then
-        MSC:RegisterAddonCompartment()
+        MSC:SetAddonCompartmentShown(MSC.db.showAddonCompartmentButton)
+        MSC:UpdateMinimapIcon()
     end
 end
 
@@ -113,10 +118,21 @@ end
 
 -- ============================================================
 -- Slash command - the only entry point that builds the UI.
+-- "lure [beast|off]" is a debug hatch that forces the lure overlay to
+-- show, bypassing Sixth Sense/zone/quest checks.
 -- ============================================================
 SLASH_MIDNIGHTSKINNINGCOMPANION1 = "/mscompanion"
 SLASH_MIDNIGHTSKINNINGCOMPANION2 = "/skinningcompanion"
 SlashCmdList["MIDNIGHTSKINNINGCOMPANION"] = function(msg)
+    local command, arg = msg:lower():match("^(%S*)%s*(%S*)$")
+    if command == "lure" and MSC.LureOverlay then
+        if arg == "off" then
+            MSC.LureOverlay:DebugHide()
+        else
+            MSC.LureOverlay:DebugShow(arg ~= "" and arg or nil)
+        end
+        return
+    end
     if MSC.UI then
         MSC.UI:Toggle()
     end
@@ -128,21 +144,71 @@ local function OnAddonCompartmentClick()
     end
 end
 
--- Registers the Addon Compartment icon by hand instead of through
--- the TOC's AddonCompartmentFunc, which would register unconditionally
--- for every player at load - before MSC.Profession even knows whether
--- they're a skinner. Only called once, from OnPlayerLogin, and only
--- for a skinner.
-function MSC:RegisterAddonCompartment()
+-- AddonCompartmentFrame has no supported unregister call, but
+-- registeredAddons is a plain (non-secure) Lua table - adding/removing
+-- our own entry from it, then calling UpdateDisplay(), is the same
+-- technique LibDBCompartment uses for a real show/hide toggle.
+local compartmentButtonInfo
+
+function MSC:SetAddonCompartmentShown(shown)
     if not AddonCompartmentFrame then
         return
     end
-    AddonCompartmentFrame:RegisterAddon({
+    compartmentButtonInfo = compartmentButtonInfo or {
         text = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME,
         icon = C_AddOns.GetAddOnMetadata(ADDON_NAME, "IconTexture"),
         notCheckable = true,
         func = OnAddonCompartmentClick,
+    }
+    local index = tIndexOf(AddonCompartmentFrame.registeredAddons, compartmentButtonInfo)
+    if shown and not index then
+        AddonCompartmentFrame:RegisterAddon(compartmentButtonInfo)
+    elseif not shown and index then
+        table.remove(AddonCompartmentFrame.registeredAddons, index)
+        AddonCompartmentFrame:UpdateDisplay()
+    end
+end
+
+local ldbObject
+
+local function GetOrCreateLDB()
+    if ldbObject then
+        return ldbObject
+    end
+    local LDB = LibStub("LibDataBroker-1.1", true)
+    if not LDB then
+        return nil
+    end
+    ldbObject = LDB:NewDataObject(ADDON_NAME, {
+        type = "launcher",
+        text = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME,
+        icon = C_AddOns.GetAddOnMetadata(ADDON_NAME, "IconTexture"),
+        OnClick = function()
+            if MSC.UI then
+                MSC.UI:Toggle()
+            end
+        end,
+        OnTooltipShow = function(tooltip)
+            tooltip:AddLine(C_AddOns.GetAddOnMetadata(ADDON_NAME, "Title") or ADDON_NAME)
+        end,
     })
+    return ldbObject
+end
+
+function MSC:UpdateMinimapIcon()
+    local LibDBIcon = LibStub("LibDBIcon-1.0", true)
+    local ldb = GetOrCreateLDB()
+    if not LibDBIcon or not ldb then
+        return
+    end
+    if not LibDBIcon:IsRegistered(ADDON_NAME) then
+        LibDBIcon:Register(ADDON_NAME, ldb, MSC.db.minimapIcon)
+    end
+    if MSC.db.minimapIcon.hide then
+        LibDBIcon:Hide(ADDON_NAME)
+    else
+        LibDBIcon:Show(ADDON_NAME)
+    end
 end
 
 function MSC:Print(msg)

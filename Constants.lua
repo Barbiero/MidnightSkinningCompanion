@@ -49,7 +49,7 @@ MSC.BEAST_REAGENTS = {
 MSC.BEAST_ICON = {
     gloomclaw = "Interface\\Icons\\Ability_Hunter_Pet_Cat",
     silverscale = "Interface\\Icons\\Ability_Hunter_Pet_Turtle",
-    lumenfin = "Interface\\Icons\\Ability_Hunter_Pet_Sporebat",
-    umbrafang = "Interface\\Icons\\Ability_Hunter_Pet_Wolf",
-    netherscythe = "Interface\\Icons\\Ability_Hunter_Pet_WarpStalker",
+    lumenfin = "Interface\\Icons\\INV_SporeBat3Mount_Purple",
+    umbrafang = "Interface\\Icons\\INV_StalkerMount_Orange",
+    netherscythe = "Interface\\Icons\\INV_Achievement_RaidNerubian_FlyingNerubianEvolved",
 }

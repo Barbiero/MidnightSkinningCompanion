@@ -7,46 +7,56 @@ MSC.UI = UI
 -- actually opens the addon.
 local frame
 
-local ROW_HEIGHT = 20
-local ROW_BUTTON_WIDTH = 70
+local ROW_HEIGHT = 25
+local ROW_BUTTON_WIDTH = 87.5
 
-local CRAFT_ROW_HEIGHT = 24
-local CRAFT_ICON_SIZE = 20
-local REAGENT_ICON_SIZE = 16
+local CRAFT_ROW_HEIGHT = 30
+local CRAFT_ICON_SIZE = 25
+local REAGENT_ICON_SIZE = 20
 -- Headroom over the current max of 2 reagents/beast (Constants.lua).
 local MAX_REAGENT_ICONS = 4
 
+local FONT_SCALE = 1.25
+
+local function GrowFont(fontString)
+    local file, size, flags = fontString:GetFont()
+    if file then
+        fontString:SetFont(file, size * FONT_SCALE, flags)
+    end
+end
+
 local function BuildFrame()
     local f = CreateFrame("Frame", "MidnightSkinningCompanionFrame", UIParent, "BackdropTemplate")
-    f:SetSize(420, 460)
+    f:SetSize(525, 575)
     f:SetPoint("CENTER")
+    f:SetFrameStrata("DIALOG")
+    f:SetScale(MSC.db.uiScale or 1.0)
     f:SetMovable(true)
     f:EnableMouse(true)
-    -- Registering the frame's global name here makes Escape close it,
-    -- same as the X button, without us handling the key ourselves.
-    tinsert(UISpecialFrames, "MidnightSkinningCompanionFrame")
+    tinsert(UISpecialFrames, f:GetName())
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
     f:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
         edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 11, right = 12, top = 12, bottom = 11 },
+        tile = true, tileSize = 40, edgeSize = 40,
+        insets = { left = 13.75, right = 15, top = 15, bottom = 13.75 },
     })
 
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-    title:SetPoint("TOP", 0, -16)
+    title:SetPoint("TOP", 0, -20)
     title:SetText("Midnight Skinning Companion")
+    GrowFont(title)
     f.title = title
 
     local close = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    close:SetPoint("TOPRIGHT", -4, -4)
+    close:SetPoint("TOPRIGHT", -5, -5)
     close:SetScript("OnClick", function() f:Hide() end)
 
     local optionsButton = CreateFrame("Button", nil, f)
-    optionsButton:SetSize(20, 20)
-    optionsButton:SetPoint("RIGHT", close, "LEFT", -2, 0)
+    optionsButton:SetSize(25, 25)
+    optionsButton:SetPoint("RIGHT", close, "LEFT", -2.5, 0)
     optionsButton:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
     optionsButton:SetPushedTexture("Interface\\Buttons\\UI-OptionsButton")
     optionsButton:SetHighlightTexture("Interface\\Buttons\\UI-OptionsButton", "ADD")
@@ -62,26 +72,28 @@ local function BuildFrame()
 
     -- Hidden quest section -------------------------------------------------
     local questHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    questHeader:SetPoint("TOPLEFT", 20, -44)
+    questHeader:SetPoint("TOPLEFT", 25, -55)
     questHeader:SetText("Available Beasts")
+    GrowFont(questHeader)
 
     local questList = CreateFrame("Frame", nil, f)
-    questList:SetPoint("TOPLEFT", 20, -66)
-    questList:SetPoint("RIGHT", -20, 0)
-    questList:SetHeight(160)
+    questList:SetPoint("TOPLEFT", 25, -82.5)
+    questList:SetPoint("RIGHT", -25, 0)
+    questList:SetHeight(200)
     f.questList = questList
     f.questRows = {}
 
     -- Lure crafting section -------------------------------------------------
     local craftHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    craftHeader:SetPoint("TOPLEFT", questList, "BOTTOMLEFT", 0, -12)
+    craftHeader:SetPoint("TOPLEFT", questList, "BOTTOMLEFT", 0, -15)
     craftHeader:SetText("Skinning Lures")
+    GrowFont(craftHeader)
     f.craftHeader = craftHeader
 
     local craftList = CreateFrame("Frame", nil, f)
-    craftList:SetPoint("TOPLEFT", craftHeader, "BOTTOMLEFT", 0, -6)
-    craftList:SetPoint("RIGHT", -20, 0)
-    craftList:SetHeight(160)
+    craftList:SetPoint("TOPLEFT", craftHeader, "BOTTOMLEFT", 0, -7.5)
+    craftList:SetPoint("RIGHT", -25, 0)
+    craftList:SetHeight(200)
     f.craftList = craftList
     f.craftRows = {}
 
@@ -89,8 +101,8 @@ local function BuildFrame()
     -- is loaded, since MSC never fetches AH data on its own.
     if MSC.AuctionHouse:IsAuctionatorLoaded() then
         local ahButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-        ahButton:SetSize(200, 24)
-        ahButton:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -20)
+        ahButton:SetSize(250, 30)
+        ahButton:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -25)
         ahButton:SetText("Auctionator Shopping List")
         ahButton:SetScript("OnClick", function()
             local ok, count = MSC.AuctionHouse:CreateShoppingList()
@@ -143,10 +155,11 @@ local function AcquireRow(pool, parent, index)
         row:SetHeight(ROW_HEIGHT)
         row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         row.label:SetPoint("LEFT", 0, 0)
-        row.label:SetPoint("RIGHT", row, "RIGHT", -(ROW_BUTTON_WIDTH + 6), 0)
+        row.label:SetPoint("RIGHT", row, "RIGHT", -(ROW_BUTTON_WIDTH + 7.5), 0)
         row.label:SetJustifyH("LEFT")
+        GrowFont(row.label)
         row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.button:SetSize(ROW_BUTTON_WIDTH, ROW_HEIGHT - 2)
+        row.button:SetSize(ROW_BUTTON_WIDTH, ROW_HEIGHT - 2.5)
         row.button:SetPoint("RIGHT", row, "RIGHT", 0, 0)
         pool[index] = row
     end
@@ -175,7 +188,8 @@ local function CreateIconWithCount(parent, size)
     icon.texture:SetAllPoints()
     icon.texture:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     icon.count = icon:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-    icon.count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -1)
+    icon.count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2.5, -1.25)
+    GrowFont(icon.count)
     icon:EnableMouse(true)
     icon:SetScript("OnEnter", function(self)
         if not self.itemID then
@@ -201,31 +215,33 @@ local function AcquireCraftRow(pool, parent, index)
         row.lureIcon:SetPoint("LEFT", row, "LEFT", 0, 0)
 
         row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        row.name:SetPoint("LEFT", row.lureIcon, "RIGHT", 4, 0)
-        row.name:SetWidth(62)
+        row.name:SetPoint("LEFT", row.lureIcon, "RIGHT", 5, 0)
+        row.name:SetWidth(77.5)
         row.name:SetWordWrap(false)
         row.name:SetJustifyH("LEFT")
+        GrowFont(row.name)
 
         row.reagentIcons = {}
         for i = 1, MAX_REAGENT_ICONS do
             local reagentIcon = CreateIconWithCount(row, REAGENT_ICON_SIZE)
             if i == 1 then
-                reagentIcon:SetPoint("LEFT", row.name, "RIGHT", 4, 0)
+                reagentIcon:SetPoint("LEFT", row.name, "RIGHT", 5, 0)
             else
-                reagentIcon:SetPoint("LEFT", row.reagentIcons[i - 1], "RIGHT", 16, 0)
+                reagentIcon:SetPoint("LEFT", row.reagentIcons[i - 1], "RIGHT", 20, 0)
             end
             row.reagentIcons[i] = reagentIcon
         end
 
         row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-        row.button:SetSize(ROW_BUTTON_WIDTH, CRAFT_ROW_HEIGHT - 2)
+        row.button:SetSize(ROW_BUTTON_WIDTH, CRAFT_ROW_HEIGHT - 2.5)
         row.button:SetPoint("RIGHT", row, "RIGHT", 0, 0)
 
         row.price = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-        row.price:SetPoint("LEFT", row.reagentIcons[MAX_REAGENT_ICONS], "RIGHT", 6, 0)
-        row.price:SetPoint("RIGHT", row.button, "LEFT", -4, 0)
+        row.price:SetPoint("LEFT", row.reagentIcons[MAX_REAGENT_ICONS], "RIGHT", 7.5, 0)
+        row.price:SetPoint("RIGHT", row.button, "LEFT", -5, 0)
         row.price:SetJustifyH("LEFT")
         row.price:SetWordWrap(false)
+        GrowFont(row.price)
 
         pool[index] = row
     end
@@ -365,3 +381,10 @@ end
 function UI:IsShown()
     return frame ~= nil and frame:IsShown()
 end
+
+function UI:ApplyScale()
+    if frame then
+        frame:SetScale(MSC.db.uiScale or 1.0)
+    end
+end
+

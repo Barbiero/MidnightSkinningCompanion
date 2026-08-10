@@ -95,37 +95,70 @@ local function FindTargetKey()
     return NearestCandidate(candidates, mapID)
 end
 
--- The lure is ground-targeted, and item use in general is only
--- permitted through a real hardware click on a secure action button
--- - calling UseItemByName from Lua, even directly from an OnClick
--- script, is ADDON_ACTION_FORBIDDEN. So the button below is a
--- SecureActionButtonTemplate with its "item" attribute pointed at
--- the current lure; Blizzard's own secure click handling takes it
--- from there; the player still places the ground target themselves,
--- same as using the item manually. SetAttribute is itself combat
--- protected, which is why this is only ever called from
--- OnPlayerAurasChanged, which already refuses to run in combat.
+local FONT_SCALE = 1.25
+
+local function GrowFont(fontString)
+    local file, size, flags = fontString:GetFont()
+    if file then
+        fontString:SetFont(file, size * FONT_SCALE, flags)
+    end
+end
+
+-- Item use requires a real hardware click on a SecureActionButtonTemplate
+-- with its "item" attribute set - calling UseItemByName from Lua is
+-- ADDON_ACTION_FORBIDDEN. SetAttribute is itself combat protected,
+-- hence the InCombatLockdown guards around every caller.
+-- No backdrop/dialog box: this is meant to read as a floating action
+-- button, the same way ExtraActionBarFrame has no background panel of
+-- its own - just the button and its ornate art.
 local function BuildOverlay()
-    local f = CreateFrame("Frame", "MidnightSkinningCompanionLureOverlay", UIParent, "BackdropTemplate")
-    f:SetSize(220, 70)
-    f:SetPoint("TOP", 0, -120)
-    f:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 },
-    })
+    local f = CreateFrame("Frame", "MidnightSkinningCompanionLureOverlay", UIParent)
+    f:SetSize(320, 200)
+    f:SetPoint("TOP", 0, -150)
+    f:SetFrameStrata("HIGH")
+    f:SetScale(MSC.db.uiScale or 1.0)
 
     local label = f:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    label:SetPoint("TOP", 0, -10)
+    label:SetPoint("TOP", 0, 0)
+    GrowFont(label)
     f.label = label
 
-    local button = CreateFrame("Button", "MidnightSkinningCompanionLureOverlayButton", f, "SecureActionButtonTemplate, UIPanelButtonTemplate")
-    button:SetSize(140, 24)
-    button:SetPoint("BOTTOM", 0, 10)
-    button:SetText("Use Lure")
+    local button = CreateFrame("Button", "MidnightSkinningCompanionLureOverlayButton", f, "SecureActionButtonTemplate")
+    button:SetSize(65, 65)
+    button:SetPoint("TOP", f, "TOP", 0, -40)
     button:RegisterForClicks("AnyUp", "AnyDown")
     button:SetAttribute("type", "item")
+    button:RegisterEvent("GLOBAL_MOUSE_UP")
+    button:SetScript("OnEvent", function(self)
+        self:SetButtonState("NORMAL")
+    end)
+
+    button.icon = button:CreateTexture(nil, "BACKGROUND")
+    button.icon:SetPoint("TOPLEFT", 0, -1)
+    button.icon:SetPoint("BOTTOMRIGHT", 0, -1)
+
+    -- Same ornate frame art ExtraActionButton1 itself uses, sized and
+    -- centered the same way, rather than a hand-drawn border.
+    local style = button:CreateTexture(nil, "OVERLAY")
+    style:SetSize(320, 160)
+    style:SetPoint("CENTER", -2.5, 0)
+    style:SetTexture("Interface\\ExtraButton\\ChampionLight")
+    button.style = style
+
+    button:SetPushedTexture("Interface\\Buttons\\UI-Quickslot-Depress")
+    local pushed = button:GetPushedTexture()
+    pushed:SetPoint("TOPLEFT", 0, -1)
+    pushed:SetPoint("BOTTOMRIGHT", 0, -1)
+
+    button:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square", "ADD")
+    local highlight = button:GetHighlightTexture()
+    highlight:SetPoint("TOPLEFT", 0, -1)
+    highlight:SetPoint("BOTTOMRIGHT", 0, -1)
+
+    button.count = button:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+    button.count:SetJustifyH("RIGHT")
+    button.count:SetPoint("BOTTOMRIGHT", button.icon, -4, 4)
+    GrowFont(button.count)
     f.button = button
 
     f:Hide()
@@ -139,6 +172,22 @@ local function HasSixthSense()
         end
     end
     return false
+end
+
+-- Shared by OnPlayerAurasChanged and DebugShow; both already guarantee
+-- combat isn't active before calling this.
+local function ShowOverlayFor(key, labelSuffix)
+    if not overlayFrame then
+        overlayFrame = BuildOverlay()
+    end
+    local lure = MSC.BEAST_LURE[key]
+    local count = GetLureCount(lure.itemID)
+    overlayFrame.label:SetText(MSC.Names:GetBeastName(key) .. (labelSuffix or ""))
+    overlayFrame.button.icon:SetTexture(MSC.BEAST_ICON[key])
+    overlayFrame.button.count:SetText(count)
+    overlayFrame.button:SetAttribute("item", "item:" .. lure.itemID)
+    overlayFrame.button:SetEnabled(count > 0)
+    overlayFrame:Show()
 end
 
 local function OnPlayerAurasChanged()
@@ -155,15 +204,7 @@ local function OnPlayerAurasChanged()
         return
     end
 
-    if not overlayFrame then
-        overlayFrame = BuildOverlay()
-    end
-    local lure = MSC.BEAST_LURE[key]
-    local count = GetLureCount(lure.itemID)
-    overlayFrame.label:SetText(MSC.Names:GetBeastName(key) .. " lure: " .. count)
-    overlayFrame.button:SetAttribute("item", "item:" .. lure.itemID)
-    overlayFrame.button:SetEnabled(count > 0)
-    overlayFrame:Show()
+    ShowOverlayFor(key)
 end
 
 local function OnEvent(_, event)
@@ -239,4 +280,30 @@ end
 
 function LureOverlay:IsEnabled()
     return listenerFrame ~= nil
+end
+
+function LureOverlay:ApplyScale()
+    if overlayFrame then
+        overlayFrame:SetScale(MSC.db.uiScale or 1.0)
+    end
+end
+
+-- Debug-only: wired up from "/mscompanion lure" in Core.lua.
+function LureOverlay:DebugShow(key)
+    if InCombatLockdown() then
+        MSC:Print("Can't show the lure overlay in combat.")
+        return
+    end
+    key = key or MSC.BEASTS[1]
+    if not MSC.BEAST_LURE[key] then
+        MSC:Print("Unknown beast: " .. tostring(key))
+        return
+    end
+    ShowOverlayFor(key, " |cffff8800(debug)|r")
+end
+
+function LureOverlay:DebugHide()
+    if overlayFrame then
+        overlayFrame:Hide()
+    end
 end
