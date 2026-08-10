@@ -20,11 +20,16 @@ generally applicable rather than EllesmereUI-specific.
    Avoid wall-clock timers and table allocation in hot paths
    (`OnUpdate`, frequently-fired events).
 4. **Zero taint risk.** Never call into protected/combat-sensitive
-   APIs from addon code (e.g. don't queue or confirm a craft on the
-   player's behalf; don't touch protected Blizzard frames). Wrap
-   calls whose behavior depends on data we don't fully control
+   APIs from addon code, and never touch protected Blizzard frames.
+   Wrap calls whose behavior depends on data we don't fully control
    (item/spell/quest IDs) in `pcall` so a bad entry degrades
    gracefully instead of throwing.
+   Exception: `Crafting:CraftLure` may call `C_TradeSkillUI.CraftRecipe`
+   directly, but only synchronously from the Craft button's own
+   OnClick (a real hardware event, which `CraftRecipe` requires
+   anyway) and only when `GetReagentStatus` already reports every
+   reagent present. This is a single, player-initiated craft - not
+   queuing, batching, or auto-confirming crafts unattended.
 5. **Works across the client versions we target.** Branch on client
    version only where APIs actually differ; keep one code path
    otherwise. Once a version-specific branch exists, don't "fix up"

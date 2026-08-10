@@ -3,27 +3,90 @@ local ADDON_NAME, MSC = ...
 local AuctionHouse = {}
 MSC.AuctionHouse = AuctionHouse
 
--- ============================================================
--- STUB MODULE.
---
--- Fetching missing lure reagents from the auction house is a
--- future task. This file intentionally does nothing yet: no
--- events, no frames, no AH API calls. It exists only so UI.lua has
--- a stable module to point its (disabled) button at.
---
--- When this feature is actually built:
---   1. Implement FetchMissingReagents below, driven by
---      C_AuctionHouse events (results ready, etc.), never polling.
---   2. Flip the "Fetch Materials from AH" button in UI.lua back on
---      and remove its tooltip/disabled state.
---   3. Any listener this adds must only be registered while the AH
---      frame is open, same "zero cost unless enabled" rule as the
---      rest of the addon.
--- ============================================================
+-- Auctionator integration only. We never touch C_AuctionHouse or the
+-- AHDB ourselves beyond reading Auctionator's already-scanned price
+-- cache - fetching live AH data stays Auctionator's job.
+local SHOPPING_LIST_NAME = "MSC: Skinning Lures"
 
-function AuctionHouse:IsImplemented()
-    return false
+function AuctionHouse:IsAuctionatorLoaded()
+    return C_AddOns.IsAddOnLoaded("Auctionator") == true
 end
 
--- Planned shape, not implemented yet:
--- function AuctionHouse:FetchMissingReagents(missingReagentList) end
+-- Beast keys whose crafted lure the player does not currently own.
+-- Goes through Crafting's public status rather than counting bags
+-- itself, so the two modules never disagree on what "owned" means.
+function AuctionHouse:GetMissingLureKeys()
+    local missing = {}
+    for _, key in ipairs(MSC.BEASTS) do
+        if MSC.Crafting:GetReagentStatus(key).lureCount == 0 then
+            missing[#missing + 1] = key
+        end
+    end
+    return missing
+end
+
+-- Reagent shortfall (required - owned), aggregated across every
+-- missing lure and keyed by itemID so a reagent shared by two
+-- recipes is only asked for once.
+function AuctionHouse:GetMissingLureReagentMap()
+    local map = {}
+    for _, key in ipairs(self:GetMissingLureKeys()) do
+        local status = MSC.Crafting:GetReagentStatus(key)
+        for _, reagent in ipairs(status.missing) do
+            local entry = map[reagent.itemID]
+            if not entry then
+                entry = { itemID = reagent.itemID, name = reagent.name, need = 0 }
+                map[reagent.itemID] = entry
+            end
+            entry.need = entry.need + reagent.need
+        end
+    end
+    return map
+end
+
+-- Creates (or replaces) an Auctionator shopping list with one search
+-- term per reagent still needed for the player's missing lures.
+-- Returns true and the number of items added, or false if Auctionator
+-- isn't loaded.
+function AuctionHouse:CreateShoppingList()
+    if not self:IsAuctionatorLoaded() then
+        return false
+    end
+
+    local searchStrings = {}
+    for _, entry in pairs(self:GetMissingLureReagentMap()) do
+        local ok, searchString = pcall(Auctionator.API.v1.ConvertToSearchString, ADDON_NAME, {
+            searchString = entry.name,
+            isExact = true,
+            quantity = entry.need,
+        })
+        if ok and searchString then
+            searchStrings[#searchStrings + 1] = searchString
+        end
+    end
+
+    local ok = pcall(Auctionator.API.v1.CreateShoppingList, ADDON_NAME, SHOPPING_LIST_NAME, searchStrings)
+    if not ok then
+        return false
+    end
+    return true, #searchStrings
+end
+
+-- Sum of Auctionator's latest AHDB price for a lure's reagents, or
+-- nil if Auctionator isn't loaded or has no price for any one of
+-- them - a partial total would be misleading, so we show nothing
+-- instead. Purely an "extra" display, never required to use the addon.
+function AuctionHouse:GetLurePrice(key)
+    if not self:IsAuctionatorLoaded() then
+        return nil
+    end
+    local total = 0
+    for _, reagent in ipairs(MSC.BEAST_REAGENTS[key] or {}) do
+        local ok, price = pcall(Auctionator.API.v1.GetAuctionPriceByItemID, ADDON_NAME, reagent.itemID)
+        if not ok or not price or price <= 0 then
+            return nil
+        end
+        total = total + price * reagent.required
+    end
+    return total
+end

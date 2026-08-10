@@ -3,6 +3,11 @@ local ADDON_NAME, MSC = ...
 -- Multiple ranks/variants exist per location; treat any as "in range".
 MSC.SIXTH_SENSE_SPELL_IDS = { 1239058, 1239120, 1239121, 1239122, 1239151 }
 
+-- Crafting. Fixed, well-known skill line ID, unchanged across
+-- expansions - used to detect whether the profession window (if
+-- already open) is showing Skinning or some other profession.
+MSC.SKINNING_SKILL_LINE_ID = 393
+
 MSC.BEASTS = { "gloomclaw", "silverscale", "lumenfin", "umbrafang", "netherscythe" }
 
 -- Waypoint, LureOverlay

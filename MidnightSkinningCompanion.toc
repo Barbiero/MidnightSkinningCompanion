@@ -5,6 +5,8 @@
 ## Version: 0.1.0
 ## SavedVariables: MidnightSkinningCompanionDB
 ## IconTexture: Interface\Icons\INV_Misc_Pelt_Wolf_01
+## Category: Professions
+## AddonCompartmentFunc: MSC_OnAddonCompartmentClick
 
 # Load order matters: Core sets up the namespace and saved
 # variables, Constants holds pure data, the feature modules depend

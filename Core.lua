@@ -88,6 +88,14 @@ SlashCmdList["MIDNIGHTSKINNINGCOMPANION"] = function(msg)
     end
 end
 
+-- Referenced by name from the TOC's AddonCompartmentFunc - must stay
+-- global. Same action as the slash command.
+function MSC_OnAddonCompartmentClick()
+    if MSC.UI then
+        MSC.UI:Toggle()
+    end
+end
+
 function MSC:Print(msg)
     DEFAULT_CHAT_FRAME:AddMessage("|cff33ff99MidnightSkinningCompanion|r: " .. tostring(msg))
 end

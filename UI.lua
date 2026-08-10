@@ -10,12 +10,21 @@ local frame
 local ROW_HEIGHT = 20
 local ROW_BUTTON_WIDTH = 70
 
+local CRAFT_ROW_HEIGHT = 24
+local CRAFT_ICON_SIZE = 20
+local REAGENT_ICON_SIZE = 16
+-- Headroom over the current max of 2 reagents/beast (Constants.lua).
+local MAX_REAGENT_ICONS = 4
+
 local function BuildFrame()
     local f = CreateFrame("Frame", "MidnightSkinningCompanionFrame", UIParent, "BackdropTemplate")
-    f:SetSize(380, 460)
+    f:SetSize(420, 460)
     f:SetPoint("CENTER")
     f:SetMovable(true)
     f:EnableMouse(true)
+    -- Registering the frame's global name here makes Escape close it,
+    -- same as the X button, without us handling the key ourselves.
+    tinsert(UISpecialFrames, "MidnightSkinningCompanionFrame")
     f:RegisterForDrag("LeftButton")
     f:SetScript("OnDragStart", f.StartMoving)
     f:SetScript("OnDragStop", f.StopMovingOrSizing)
@@ -76,20 +85,50 @@ local function BuildFrame()
     f.craftList = craftList
     f.craftRows = {}
 
-    -- Auction house section (stub, greyed out) -----------------------------
-    local ahButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
-    ahButton:SetSize(200, 24)
-    ahButton:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -20)
-    ahButton:SetText("Fetch Materials from AH")
-    ahButton:SetEnabled(false)
-    ahButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_TOP")
-        GameTooltip:SetText("Coming soon", 1, 1, 1)
-        GameTooltip:AddLine("Auction house material fetching is not implemented yet.", nil, nil, nil, true)
-        GameTooltip:Show()
+    -- Auctionator integration: only ever shown if Auctionator itself
+    -- is loaded, since MSC never fetches AH data on its own.
+    if MSC.AuctionHouse:IsAuctionatorLoaded() then
+        local ahButton = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+        ahButton:SetSize(200, 24)
+        ahButton:SetPoint("TOPLEFT", craftList, "BOTTOMLEFT", 0, -20)
+        ahButton:SetText("Auctionator Shopping List")
+        ahButton:SetScript("OnClick", function()
+            local ok, count = MSC.AuctionHouse:CreateShoppingList()
+            if not ok then
+                MSC:Print("Could not create Auctionator shopping list.")
+            elseif count == 0 then
+                MSC:Print("No missing lures - nothing to shop for.")
+            else
+                MSC:Print("Auctionator shopping list created with " .. count .. " reagent(s).")
+            end
+        end)
+        ahButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:SetText("Auctionator Shopping List", 1, 1, 1)
+            GameTooltip:AddLine("Creates an Auctionator shopping list for the reagents of every lure you don't have yet.", nil, nil, nil, true)
+            GameTooltip:Show()
+        end)
+        ahButton:SetScript("OnLeave", GameTooltip_Hide)
+        f.ahButton = ahButton
+    end
+
+    -- Reagent/lure status depends on bag contents, which can change
+    -- from mail, fishing, trades, vendors, etc. - not just crafting.
+    -- BAG_UPDATE_DELAYED coalesces all of that into one event per
+    -- batch of changes, so this stays event-driven rather than
+    -- polling. Registered only while the window is shown, so a
+    -- closed window costs nothing.
+    f:SetScript("OnEvent", function(_, event)
+        if event == "BAG_UPDATE_DELAYED" then
+            UI:RefreshCraftTab()
+        end
     end)
-    ahButton:SetScript("OnLeave", GameTooltip_Hide)
-    f.ahButton = ahButton
+    f:SetScript("OnShow", function(self)
+        self:RegisterEvent("BAG_UPDATE_DELAYED")
+    end)
+    f:SetScript("OnHide", function(self)
+        self:UnregisterEvent("BAG_UPDATE_DELAYED")
+    end)
 
     f:Hide()
     return f
@@ -125,6 +164,85 @@ local function HideRowsFrom(pool, fromIndex)
     end
 end
 
+-- A single "bag slot" style widget: item icon with a count badge in
+-- the corner, and an item tooltip on hover. Used for both the lure
+-- itself and its reagents so "do we have it" and "how many" collapse
+-- into one glance instead of separate text.
+local function CreateIconWithCount(parent, size)
+    local icon = CreateFrame("Frame", nil, parent)
+    icon:SetSize(size, size)
+    icon.texture = icon:CreateTexture(nil, "ARTWORK")
+    icon.texture:SetAllPoints()
+    icon.texture:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    icon.count = icon:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+    icon.count:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 2, -1)
+    icon:EnableMouse(true)
+    icon:SetScript("OnEnter", function(self)
+        if not self.itemID then
+            return
+        end
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetItemByID(self.itemID)
+        GameTooltip:Show()
+    end)
+    icon:SetScript("OnLeave", GameTooltip_Hide)
+    return icon
+end
+
+-- Craft rows need more than a label + button: a lure icon/count,
+-- reagent icons/counts, and an optional price, all on one line.
+local function AcquireCraftRow(pool, parent, index)
+    local row = pool[index]
+    if not row then
+        row = CreateFrame("Frame", nil, parent)
+        row:SetHeight(CRAFT_ROW_HEIGHT)
+
+        row.lureIcon = CreateIconWithCount(row, CRAFT_ICON_SIZE)
+        row.lureIcon:SetPoint("LEFT", row, "LEFT", 0, 0)
+
+        row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.name:SetPoint("LEFT", row.lureIcon, "RIGHT", 4, 0)
+        row.name:SetWidth(62)
+        row.name:SetWordWrap(false)
+        row.name:SetJustifyH("LEFT")
+
+        row.reagentIcons = {}
+        for i = 1, MAX_REAGENT_ICONS do
+            local reagentIcon = CreateIconWithCount(row, REAGENT_ICON_SIZE)
+            if i == 1 then
+                reagentIcon:SetPoint("LEFT", row.name, "RIGHT", 4, 0)
+            else
+                reagentIcon:SetPoint("LEFT", row.reagentIcons[i - 1], "RIGHT", 16, 0)
+            end
+            row.reagentIcons[i] = reagentIcon
+        end
+
+        row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        row.button:SetSize(ROW_BUTTON_WIDTH, CRAFT_ROW_HEIGHT - 2)
+        row.button:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+
+        row.price = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        row.price:SetPoint("LEFT", row.reagentIcons[MAX_REAGENT_ICONS], "RIGHT", 6, 0)
+        row.price:SetPoint("RIGHT", row.button, "LEFT", -4, 0)
+        row.price:SetJustifyH("LEFT")
+        row.price:SetWordWrap(false)
+
+        pool[index] = row
+    end
+    row:ClearAllPoints()
+    row:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -(index - 1) * CRAFT_ROW_HEIGHT)
+    row:SetPoint("RIGHT", parent, "RIGHT", 0, 0)
+    row.lureIcon:Hide()
+    for _, reagentIcon in ipairs(row.reagentIcons) do
+        reagentIcon:Hide()
+    end
+    row.name:SetText("")
+    row.price:SetText("")
+    row.button:Hide()
+    row:Show()
+    return row
+end
+
 function UI:RefreshQuestTab()
     if not frame then
         return
@@ -157,24 +275,56 @@ function UI:RefreshCraftTab()
     end
     local statuses = MSC.Crafting:GetAllReagentStatus()
     if #statuses == 0 then
-        local row = AcquireRow(frame.craftRows, frame.craftList, 1)
-        row.label:SetText("|cff888888No skinning beasts configured yet.|r")
+        local row = AcquireCraftRow(frame.craftRows, frame.craftList, 1)
+        row.name:SetWidth(0)
+        row.name:SetText("|cff888888No skinning beasts configured yet.|r")
         HideRowsFrom(frame.craftRows, 2)
         return
     end
     for i, status in ipairs(statuses) do
-        local row = AcquireRow(frame.craftRows, frame.craftList, i)
+        local row = AcquireCraftRow(frame.craftRows, frame.craftList, i)
         local name = MSC.Names:GetBeastName(status.key)
-        local label
-        if status.haveAll then
-            label = "|cff33ff33" .. name .. " lure - ready|r"
-        else
-            label = "|cffff5555" .. name .. " lure - missing " .. #status.missing .. " reagent(s)|r"
+
+        -- Lure icon + owned count: "do we have it" and "how many"
+        -- collapsed into one glance.
+        if status.lureItemID then
+            row.lureIcon.itemID = status.lureItemID
+            row.lureIcon.texture:SetTexture(C_Item.GetItemIconByID(status.lureItemID))
+            row.lureIcon.count:SetText(tostring(status.lureCount))
+            if status.lureCount > 0 then
+                row.lureIcon.count:SetTextColor(0.4, 1, 0.4)
+            else
+                row.lureIcon.count:SetTextColor(1, 0.3, 0.3)
+            end
+            row.lureIcon:Show()
         end
-        row.label:SetText(label)
+
+        row.name:SetText(status.haveAll and ("|cff33ff33" .. name .. "|r") or ("|cffff5555" .. name .. "|r"))
+
+        -- Missing reagents as icon + shortfall count, freed up by the
+        -- lure icon no longer needing a "missing N reagent(s)" sentence.
+        for idx, reagentIcon in ipairs(row.reagentIcons) do
+            local missing = status.missing[idx]
+            if missing then
+                reagentIcon.itemID = missing.itemID
+                reagentIcon.texture:SetTexture(C_Item.GetItemIconByID(missing.itemID))
+                reagentIcon.count:SetText(tostring(missing.need))
+                reagentIcon.count:SetTextColor(1, 0.3, 0.3)
+                reagentIcon:Show()
+            end
+        end
+
+        -- Extra-only: Auctionator's AHDB price for the reagents, when
+        -- Auctionator is loaded and has data for all of them.
+        local price = MSC.AuctionHouse:GetLurePrice(status.key)
+        row.price:SetText(price and GetCoinTextureString(price) or "")
+
         row.button:SetText("Craft")
+        -- Greyed out exactly when the profession window's own Create
+        -- button would be: missing reagents.
+        row.button:SetEnabled(status.haveAll)
         row.button:SetScript("OnClick", function()
-            MSC.Crafting:OpenRecipe(status.key)
+            MSC.Crafting:CraftLure(status.key)
         end)
         row.button:Show()
     end
