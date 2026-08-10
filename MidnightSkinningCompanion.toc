@@ -1,0 +1,23 @@
+## Interface: 120007, 120100
+## Title: Midnight Skinning Companion
+## Notes: Tracks beast skinning hidden quests, simplifies crafting skinning lures, and helps you get in position to use them.
+## Author: YourName
+## Version: 0.1.0
+## SavedVariables: MidnightSkinningCompanionDB
+## IconTexture: Interface\Icons\INV_Misc_Pelt_Wolf_01
+
+# Load order matters: Core sets up the namespace and saved
+# variables, Constants holds pure data, the feature modules depend
+# on both, and UI depends on every feature module existing first.
+# Waypoint.lua and LureOverlay.lua are independent of each other -
+# neither calls into the other - so their relative order here
+# doesn't matter.
+Core.lua
+Constants.lua
+Names.lua
+Quests.lua
+Crafting.lua
+Waypoint.lua
+LureOverlay.lua
+AuctionHouse.lua
+UI.lua
