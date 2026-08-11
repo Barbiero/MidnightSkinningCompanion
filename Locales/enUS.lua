@@ -12,7 +12,7 @@ MSC.Locale:Register("enUS", {
     MSG_AH_LIST_FAILED = "Could not create Auctionator shopping list.",
     MSG_AH_LIST_EMPTY = "No missing lures - nothing to shop for.",
     MSG_AH_LIST_CREATED = "Auctionator shopping list created with %d reagent(s).",
-    NO_QUESTS_CONFIGURED = "No hidden quests configured yet.",
+    NO_QUESTS_CONFIGURED = "No beast kills configured yet.",
     WAYPOINT_BUTTON = "Waypoint",
     NO_BEASTS_CONFIGURED = "No skinning beasts configured yet.",
     CRAFT_BUTTON = "Craft",

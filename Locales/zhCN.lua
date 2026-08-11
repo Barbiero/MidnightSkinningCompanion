@@ -9,7 +9,7 @@ MSC.Locale:Register("zhCN", {
     MSG_AH_LIST_FAILED = "无法创建 Auctionator 购物清单。",
     MSG_AH_LIST_EMPTY = "没有缺少的诱饵 - 无需购买。",
     MSG_AH_LIST_CREATED = "已创建 Auctionator 购物清单，包含 %d 种材料。",
-    NO_QUESTS_CONFIGURED = "尚未配置隐藏任务。",
+    NO_QUESTS_CONFIGURED = "尚未配置野兽击杀。",
     WAYPOINT_BUTTON = "路标",
     NO_BEASTS_CONFIGURED = "尚未配置剥皮野兽。",
     CRAFT_BUTTON = "制作",

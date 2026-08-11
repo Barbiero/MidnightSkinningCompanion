@@ -9,7 +9,7 @@ MSC.Locale:Register("ruRU", {
     MSG_AH_LIST_FAILED = "Не удалось создать список покупок Auctionator.",
     MSG_AH_LIST_EMPTY = "Нет недостающих приманок - покупать нечего.",
     MSG_AH_LIST_CREATED = "Список покупок Auctionator создан: %d реагент(ов).",
-    NO_QUESTS_CONFIGURED = "Скрытые задания пока не настроены.",
+    NO_QUESTS_CONFIGURED = "Убийства зверей пока не настроены.",
     WAYPOINT_BUTTON = "Маршрут",
     NO_BEASTS_CONFIGURED = "Звери для снятия шкур пока не настроены.",
     CRAFT_BUTTON = "Создать",

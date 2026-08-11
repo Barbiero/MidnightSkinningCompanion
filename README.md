@@ -1,13 +1,13 @@
 # Midnight Skinning Companion
 
 A World of Warcraft: Midnight addon for the Skinning profession for
-tracking Renowed Beast kills, also simplifies crafting the associated
+tracking Renowned Beast kills, also simplifies crafting the associated
 skinning lures, and helps you get in position to use them. Only
 active on characters who have learned Skinning.
 
 ## Features
 
-- **Quest tracking** for the beast-skinning hidden quest line.
+- **Tracks Renowned Beast kills** so you can check if you've done them today.
 - **Lure crafting helper** - shows reagent status and lets you craft
   a lure directly from the addon window.
 - **Lure overlay** - an on-screen indicator when it's time to use a

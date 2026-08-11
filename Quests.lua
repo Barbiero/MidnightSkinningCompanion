@@ -30,8 +30,8 @@ end
 
 -- Called from MSC:SetFeaturesEnabled() whenever the player is (or
 -- becomes) a skinner. Not an opt-in feature in its own right, but
--- gated entirely on MSC.Profession - tracking a hidden quest line
--- that requires Skinning is pointless for anyone else.
+-- gated entirely on MSC.Profession - tracking Renowned Beast kills
+-- that require Skinning is pointless for anyone else.
 function Quests:Enable()
     if listenerFrame then
         return

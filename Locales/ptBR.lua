@@ -9,7 +9,7 @@ MSC.Locale:Register("ptBR", {
     MSG_AH_LIST_FAILED = "Não foi possível criar a lista de compras do Auctionator.",
     MSG_AH_LIST_EMPTY = "Nenhuma isca faltando - nada para comprar.",
     MSG_AH_LIST_CREATED = "Lista de compras do Auctionator criada com %d reagente(s).",
-    NO_QUESTS_CONFIGURED = "Nenhuma missão oculta configurada ainda.",
+    NO_QUESTS_CONFIGURED = "Nenhuma morte de besta configurada ainda.",
     WAYPOINT_BUTTON = "Ponto de rota",
     NO_BEASTS_CONFIGURED = "Nenhuma besta de esfolamento configurada ainda.",
     CRAFT_BUTTON = "Confeccionar",

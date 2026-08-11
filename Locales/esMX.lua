@@ -9,7 +9,7 @@ MSC.Locale:Register("esMX", {
     MSG_AH_LIST_FAILED = "No se pudo crear la lista de compras de Auctionator.",
     MSG_AH_LIST_EMPTY = "No faltan señuelos - no hay nada que comprar.",
     MSG_AH_LIST_CREATED = "Lista de compras de Auctionator creada con %d material(es).",
-    NO_QUESTS_CONFIGURED = "Todavía no hay misiones ocultas configuradas.",
+    NO_QUESTS_CONFIGURED = "Todavía no hay muertes de bestias configuradas.",
     WAYPOINT_BUTTON = "Ruta",
     NO_BEASTS_CONFIGURED = "Todavía no hay bestias de desuello configuradas.",
     CRAFT_BUTTON = "Elaborar",

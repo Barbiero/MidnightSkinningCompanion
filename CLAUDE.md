@@ -1,8 +1,8 @@
 # MidnightSkinningCompanion
 
-A World of Warcraft: Midnight addon that tracks the beast-skinning
-hidden quest line, simplifies crafting the associated skinning
-lures, and (later) helps source their reagents. These are working
+A World of Warcraft: Midnight addon that tracks Renowned Beast
+skinning kills, simplifies crafting the associated skinning lures,
+and (later) helps source their reagents. These are working
 guidelines for anyone (human or Claude) contributing to this addon,
 adapted from EllesmereUI's CONTRIBUTING.md and trimmed to what's
 generally applicable rather than EllesmereUI-specific.

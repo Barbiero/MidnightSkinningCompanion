@@ -9,7 +9,7 @@ MSC.Locale:Register("zhTW", {
     MSG_AH_LIST_FAILED = "無法建立 Auctionator 購物清單。",
     MSG_AH_LIST_EMPTY = "沒有缺少的誘餌 - 無需購買。",
     MSG_AH_LIST_CREATED = "已建立 Auctionator 購物清單，包含 %d 種材料。",
-    NO_QUESTS_CONFIGURED = "尚未設定隱藏任務。",
+    NO_QUESTS_CONFIGURED = "尚未設定野獸擊殺。",
     WAYPOINT_BUTTON = "路標",
     NO_BEASTS_CONFIGURED = "尚未設定剝皮野獸。",
     CRAFT_BUTTON = "製作",

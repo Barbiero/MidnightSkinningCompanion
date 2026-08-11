@@ -9,7 +9,7 @@ MSC.Locale:Register("koKR", {
     MSG_AH_LIST_FAILED = "Auctionator 구매 목록을 생성할 수 없습니다.",
     MSG_AH_LIST_EMPTY = "부족한 유인제가 없습니다 - 구매할 항목이 없습니다.",
     MSG_AH_LIST_CREATED = "재료 %d개로 Auctionator 구매 목록을 생성했습니다.",
-    NO_QUESTS_CONFIGURED = "아직 설정된 숨겨진 퀘스트가 없습니다.",
+    NO_QUESTS_CONFIGURED = "아직 설정된 야수 처치가 없습니다.",
     WAYPOINT_BUTTON = "경로 표시",
     NO_BEASTS_CONFIGURED = "아직 설정된 무두질 야수가 없습니다.",
     CRAFT_BUTTON = "제작",

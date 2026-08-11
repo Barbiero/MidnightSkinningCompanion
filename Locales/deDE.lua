@@ -9,7 +9,7 @@ MSC.Locale:Register("deDE", {
     MSG_AH_LIST_FAILED = "Die Auctionator-Einkaufsliste konnte nicht erstellt werden.",
     MSG_AH_LIST_EMPTY = "Keine fehlenden Köder - nichts einzukaufen.",
     MSG_AH_LIST_CREATED = "Auctionator-Einkaufsliste mit %d Zutat(en) erstellt.",
-    NO_QUESTS_CONFIGURED = "Noch keine versteckten Quests konfiguriert.",
+    NO_QUESTS_CONFIGURED = "Noch keine Bestien-Tötungen konfiguriert.",
     WAYPOINT_BUTTON = "Wegpunkt",
     NO_BEASTS_CONFIGURED = "Noch keine Bestien zum Häuten konfiguriert.",
     CRAFT_BUTTON = "Herstellen",

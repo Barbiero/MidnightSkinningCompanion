@@ -9,7 +9,7 @@ MSC.Locale:Register("frFR", {
     MSG_AH_LIST_FAILED = "Impossible de créer la liste d'achats Auctionator.",
     MSG_AH_LIST_EMPTY = "Aucun appât manquant - rien à acheter.",
     MSG_AH_LIST_CREATED = "Liste d'achats Auctionator créée avec %d composant(s).",
-    NO_QUESTS_CONFIGURED = "Aucune quête cachée configurée pour le moment.",
+    NO_QUESTS_CONFIGURED = "Aucune mise à mort de bête configurée pour le moment.",
     WAYPOINT_BUTTON = "Point de repère",
     NO_BEASTS_CONFIGURED = "Aucune bête de dépeçage configurée pour le moment.",
     CRAFT_BUTTON = "Fabriquer",

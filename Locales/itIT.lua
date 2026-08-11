@@ -9,7 +9,7 @@ MSC.Locale:Register("itIT", {
     MSG_AH_LIST_FAILED = "Impossibile creare la lista della spesa Auctionator.",
     MSG_AH_LIST_EMPTY = "Nessuna esca mancante - niente da comprare.",
     MSG_AH_LIST_CREATED = "Lista della spesa Auctionator creata con %d reagente/i.",
-    NO_QUESTS_CONFIGURED = "Nessuna missione nascosta configurata ancora.",
+    NO_QUESTS_CONFIGURED = "Nessuna uccisione di bestie configurata ancora.",
     WAYPOINT_BUTTON = "Punto di passaggio",
     NO_BEASTS_CONFIGURED = "Nessuna bestia da scuoiatura configurata ancora.",
     CRAFT_BUTTON = "Crea",

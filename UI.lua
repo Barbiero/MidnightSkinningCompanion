@@ -70,7 +70,7 @@ local function BuildFrame()
     end)
     optionsButton:SetScript("OnLeave", GameTooltip_Hide)
 
-    -- Hidden quest section -------------------------------------------------
+    -- Renowned Beast kill tracking section --------------------------------
     local questHeader = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     questHeader:SetPoint("TOPLEFT", 25, -55)
     questHeader:SetText(MSC.L.AVAILABLE_BEASTS)
