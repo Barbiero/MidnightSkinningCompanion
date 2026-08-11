@@ -13,6 +13,8 @@ MSC.Locale:Register("esMX", {
     WAYPOINT_BUTTON = "Ruta",
     NO_BEASTS_CONFIGURED = "Todavía no hay bestias de desuello configuradas.",
     CRAFT_BUTTON = "Elaborar",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Faltan materiales",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Receta aún no aprendida",
     MSG_REQUIRES_SKINNING = "Este addon requiere la profesión de Desuello.",
 
     OPT_LURE_OVERLAY_NAME = "Superposición de señuelo",

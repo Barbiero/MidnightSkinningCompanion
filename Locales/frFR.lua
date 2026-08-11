@@ -13,6 +13,8 @@ MSC.Locale:Register("frFR", {
     WAYPOINT_BUTTON = "Point de repère",
     NO_BEASTS_CONFIGURED = "Aucune bête de dépeçage configurée pour le moment.",
     CRAFT_BUTTON = "Fabriquer",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Matériaux manquants",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Recette pas encore apprise",
     MSG_REQUIRES_SKINNING = "Cet addon nécessite le métier Dépeçage.",
 
     OPT_LURE_OVERLAY_NAME = "Superposition d'appât",

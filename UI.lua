@@ -235,6 +235,16 @@ local function AcquireCraftRow(pool, parent, index)
         row.button = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         row.button:SetSize(ROW_BUTTON_WIDTH, CRAFT_ROW_HEIGHT - 2.5)
         row.button:SetPoint("RIGHT", row, "RIGHT", 0, 0)
+        row.button:SetMotionScriptsWhileDisabled(true)
+        row.button:SetScript("OnEnter", function(self)
+            if not self.disabledTooltip then
+                return
+            end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(self.disabledTooltip, nil, nil, nil, nil, true)
+            GameTooltip:Show()
+        end)
+        row.button:SetScript("OnLeave", GameTooltip_Hide)
 
         row.price = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
         row.price:SetPoint("LEFT", row.reagentIcons[MAX_REAGENT_ICONS], "RIGHT", 7.5, 0)
@@ -255,6 +265,7 @@ local function AcquireCraftRow(pool, parent, index)
     row.name:SetText("")
     row.price:SetText("")
     row.button:Hide()
+    row.button.disabledTooltip = nil
     row:Show()
     return row
 end
@@ -337,8 +348,15 @@ function UI:RefreshCraftTab()
 
         row.button:SetText(MSC.L.CRAFT_BUTTON)
         -- Greyed out exactly when the profession window's own Create
-        -- button would be: missing reagents.
-        row.button:SetEnabled(status.haveAll)
+        -- button would be: missing reagents or recipe not learned yet.
+        row.button:SetEnabled(status.canCraft)
+        if status.canCraft then
+            row.button.disabledTooltip = nil
+        elseif status.recipeKnown == false then
+            row.button.disabledTooltip = MSC.L.CRAFT_TOOLTIP_RECIPE_NOT_LEARNED
+        else
+            row.button.disabledTooltip = MSC.L.CRAFT_TOOLTIP_MISSING_MATERIALS
+        end
         row.button:SetScript("OnClick", function()
             MSC.Crafting:CraftLure(status.key)
         end)

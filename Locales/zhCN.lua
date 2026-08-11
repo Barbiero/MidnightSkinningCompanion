@@ -13,6 +13,8 @@ MSC.Locale:Register("zhCN", {
     WAYPOINT_BUTTON = "路标",
     NO_BEASTS_CONFIGURED = "尚未配置剥皮野兽。",
     CRAFT_BUTTON = "制作",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "材料不足",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "尚未学会配方",
     MSG_REQUIRES_SKINNING = "此插件需要剥皮专业。",
 
     OPT_LURE_OVERLAY_NAME = "诱饵浮层",

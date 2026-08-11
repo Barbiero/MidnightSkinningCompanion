@@ -13,6 +13,8 @@ MSC.Locale:Register("deDE", {
     WAYPOINT_BUTTON = "Wegpunkt",
     NO_BEASTS_CONFIGURED = "Noch keine Bestien zum Häuten konfiguriert.",
     CRAFT_BUTTON = "Herstellen",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Materialien fehlen",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Rezept noch nicht erlernt",
     MSG_REQUIRES_SKINNING = "Dieses Addon erfordert den Beruf Kürschnerei.",
 
     OPT_LURE_OVERLAY_NAME = "Köder-Overlay",

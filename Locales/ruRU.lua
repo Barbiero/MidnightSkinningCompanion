@@ -13,6 +13,8 @@ MSC.Locale:Register("ruRU", {
     WAYPOINT_BUTTON = "Маршрут",
     NO_BEASTS_CONFIGURED = "Звери для снятия шкур пока не настроены.",
     CRAFT_BUTTON = "Создать",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Не хватает материалов",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Рецепт еще не изучен",
     MSG_REQUIRES_SKINNING = "Для этого аддона требуется профессия Снятие шкур.",
 
     OPT_LURE_OVERLAY_NAME = "Оверлей приманки",

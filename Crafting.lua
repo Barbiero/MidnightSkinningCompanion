@@ -16,6 +16,17 @@ local function GetOwnedCount(itemID)
     return count or 0
 end
 
+local function IsRecipeLearned(spellID)
+    if not spellID then
+        return true
+    end
+    local ok, known = pcall(IsPlayerSpell, spellID)
+    if not ok then
+        return true
+    end
+    return known and true or false
+end
+
 function Crafting:GetReagentStatus(key)
     local lure = MSC.BEAST_LURE[key]
     local status = {
@@ -24,6 +35,7 @@ function Crafting:GetReagentStatus(key)
         haveAll = true,
         lureItemID = lure and lure.itemID,
         lureCount = lure and GetOwnedCount(lure.itemID) or 0,
+        recipeKnown = IsRecipeLearned(lure and lure.craftSpellID),
     }
     for _, reagent in ipairs(MSC.BEAST_REAGENTS[key] or {}) do
         local have = GetOwnedCount(reagent.itemID)
@@ -36,6 +48,7 @@ function Crafting:GetReagentStatus(key)
             }
         end
     end
+    status.canCraft = status.haveAll and status.recipeKnown ~= false
     return status
 end
 
@@ -72,7 +85,7 @@ function Crafting:CraftLure(key)
     if not lure then
         return
     end
-    if not self:GetReagentStatus(key).haveAll then
+    if not self:GetReagentStatus(key).canCraft then
         return
     end
     if not (C_TradeSkillUI and C_TradeSkillUI.OpenRecipe and C_TradeSkillUI.CraftRecipe) then

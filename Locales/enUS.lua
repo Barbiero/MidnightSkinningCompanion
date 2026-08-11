@@ -16,6 +16,8 @@ MSC.Locale:Register("enUS", {
     WAYPOINT_BUTTON = "Waypoint",
     NO_BEASTS_CONFIGURED = "No skinning beasts configured yet.",
     CRAFT_BUTTON = "Craft",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Missing materials",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Recipe not learned yet",
     MSG_REQUIRES_SKINNING = "This addon requires the Skinning profession.",
 
     OPT_LURE_OVERLAY_NAME = "Lure Overlay",

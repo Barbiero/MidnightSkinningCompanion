@@ -13,6 +13,8 @@ MSC.Locale:Register("koKR", {
     WAYPOINT_BUTTON = "경로 표시",
     NO_BEASTS_CONFIGURED = "아직 설정된 무두질 야수가 없습니다.",
     CRAFT_BUTTON = "제작",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "재료 부족",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "아직 배우지 않은 제조법",
     MSG_REQUIRES_SKINNING = "이 애드온은 무두질 전문 기술이 필요합니다.",
 
     OPT_LURE_OVERLAY_NAME = "유인제 오버레이",

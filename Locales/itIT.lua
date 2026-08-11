@@ -13,6 +13,8 @@ MSC.Locale:Register("itIT", {
     WAYPOINT_BUTTON = "Punto di passaggio",
     NO_BEASTS_CONFIGURED = "Nessuna bestia da scuoiatura configurata ancora.",
     CRAFT_BUTTON = "Crea",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Materiali mancanti",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Ricetta non ancora appresa",
     MSG_REQUIRES_SKINNING = "Questo addon richiede la professione Scuoiatura.",
 
     OPT_LURE_OVERLAY_NAME = "Sovrapposizione esca",

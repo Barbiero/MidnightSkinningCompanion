@@ -13,6 +13,8 @@ MSC.Locale:Register("ptBR", {
     WAYPOINT_BUTTON = "Ponto de rota",
     NO_BEASTS_CONFIGURED = "Nenhuma besta de esfolamento configurada ainda.",
     CRAFT_BUTTON = "Confeccionar",
+    CRAFT_TOOLTIP_MISSING_MATERIALS = "Faltam materiais",
+    CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Receita ainda não aprendida",
     MSG_REQUIRES_SKINNING = "Este addon requer a profissão de Esfolamento.",
 
     OPT_LURE_OVERLAY_NAME = "Sobreposição de isca",
