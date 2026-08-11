@@ -1,18 +1,18 @@
 ## Interface: 120007, 120100
 ## Title: Midnight Skinning Companion
-## Notes: Tracks beast skinning hidden quests, simplifies crafting skinning lures, and helps you get in position to use them.
-## Notes-deDE: Verfolgt die verborgene Questreihe zum Häuten von Bestien, vereinfacht das Herstellen von Häutungsködern und hilft dir, dich für ihren Einsatz in Position zu bringen.
-## Notes-esES: Rastrea las misiones ocultas de desuello de bestias, simplifica la fabricación de señuelos de desuello y te ayuda a colocarte en posición para usarlos.
-## Notes-esMX: Rastrea las misiones ocultas de desuello de bestias, simplifica la elaboración de señuelos de desuello y te ayuda a colocarte en posición para usarlos.
-## Notes-frFR: Suit les quêtes cachées de dépeçage de bêtes, simplifie la fabrication d'appâts de dépeçage et vous aide à vous positionner pour les utiliser.
-## Notes-itIT: Traccia le missioni nascoste di scuoiatura delle bestie, semplifica la creazione di esche da scuoiatura e ti aiuta a posizionarti per usarle.
-## Notes-ptBR: Rastreia as missões ocultas de esfolamento de bestas, simplifica a confecção de iscas de esfolamento e ajuda você a se posicionar para usá-las.
-## Notes-ruRU: Отслеживает скрытые задания на снятие шкур зверей, упрощает изготовление приманок для снятия шкур и помогает вам занять позицию для их использования.
-## Notes-koKR: 야수 무두질 숨겨진 퀘스트를 추적하고, 무두질 유인제 제작을 간편하게 해주며, 유인제를 사용할 위치로 이동하도록 도와줍니다.
-## Notes-zhCN: 追踪野兽剥皮隐藏任务，简化剥皮诱饵的制作，并帮助你就位以使用它们。
-## Notes-zhTW: 追蹤野獸剝皮隱藏任務，簡化剝皮誘餌的製作，並幫助你就位以使用它們。
-## Author: YourName
-## Version: 0.1.0
+## Notes: Tracks beast skinning daily kills, simplifies crafting skinning lures, and helps you get in position to use them.
+## Notes-deDE: Verfolgt die täglichen Häutungs-Tötungen von Bestien, vereinfacht das Herstellen von Häutungsködern und hilft dir, dich für ihren Einsatz in Position zu bringen.
+## Notes-esES: Rastrea las muertes diarias de desuello de bestias, simplifica la fabricación de señuelos de desuello y te ayuda a colocarte en posición para usarlos.
+## Notes-esMX: Rastrea las muertes diarias de desuello de bestias, simplifica la elaboración de señuelos de desuello y te ayuda a colocarte en posición para usarlos.
+## Notes-frFR: Suit les mises à mort quotidiennes de dépeçage de bêtes, simplifie la fabrication d'appâts de dépeçage et vous aide à vous positionner pour les utiliser.
+## Notes-itIT: Traccia le uccisioni giornaliere di scuoiatura delle bestie, semplifica la creazione di esche da scuoiatura e ti aiuta a posizionarti per usarle.
+## Notes-ptBR: Rastreia as mortes diárias de esfolamento de bestas, simplifica a confecção de iscas de esfolamento e ajuda você a se posicionar para usá-las.
+## Notes-ruRU: Отслеживает ежедневные убийства зверей для снятия шкур, упрощает изготовление приманок для снятия шкур и помогает вам занять позицию для их использования.
+## Notes-koKR: 야수 무두질 일일 처치를 추적하고, 무두질 유인제 제작을 간편하게 해주며, 유인제를 사용할 위치로 이동하도록 도와줍니다.
+## Notes-zhCN: 追踪野兽剥皮每日击杀，简化剥皮诱饵的制作，并帮助你就位以使用它们。
+## Notes-zhTW: 追蹤野獸剝皮每日擊殺，簡化剝皮誘餌的製作，並幫助你就位以使用它們。
+## Author: Badashi
+## Version: 1.0.0
 ## SavedVariables: MidnightSkinningCompanionDB
 ## IconTexture: Interface\Icons\INV_Misc_Pelt_Wolf_01
 ## Category: Professions

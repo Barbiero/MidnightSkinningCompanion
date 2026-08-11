@@ -121,8 +121,7 @@ end
 -- "lure [beast|off]" is a debug hatch that forces the lure overlay to
 -- show, bypassing Sixth Sense/zone/quest checks.
 -- ============================================================
-SLASH_MIDNIGHTSKINNINGCOMPANION1 = "/mscompanion"
-SLASH_MIDNIGHTSKINNINGCOMPANION2 = "/skinningcompanion"
+SLASH_MIDNIGHTSKINNINGCOMPANION1 = "/msc"
 SlashCmdList["MIDNIGHTSKINNINGCOMPANION"] = function(msg)
     local command, arg = msg:lower():match("^(%S*)%s*(%S*)$")
     if command == "lure" and MSC.LureOverlay then

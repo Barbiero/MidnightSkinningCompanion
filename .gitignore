@@ -1,0 +1,11 @@
+# Third-party libraries are pulled by the packager via .pkgmeta externals.
+# Libs.xml itself is ours (load order) and stays tracked.
+Libs/LibStub/
+Libs/CallbackHandler-1.0/
+Libs/LibDataBroker-1.1/
+Libs/LibDBIcon-1.0/
+
+.DS_Store
+
+# Claude Code workspace files
+.claude/

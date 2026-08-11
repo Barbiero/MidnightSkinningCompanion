@@ -486,7 +486,7 @@ function LureOverlay:ApplyScale()
     end
 end
 
--- Debug-only: wired up from "/mscompanion lure" in Core.lua.
+-- Debug-only: wired up from "/msc lure" in Core.lua.
 function LureOverlay:DebugShow(key)
     if InCombatLockdown() then
         MSC:Print(MSC.L.MSG_CANT_SHOW_COMBAT)
