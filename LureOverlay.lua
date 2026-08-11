@@ -14,9 +14,10 @@ MSC.LureOverlay = LureOverlay
 -- MSC.SIXTH_SENSE_SPELL_IDS to the player when a lure can be used
 -- here, so a single UNIT_AURA listener on "player" tells us when to
 -- look, instead of a repeating ticker checking position every
--- second. Zone + quest completion then narrow that down to a beast;
--- a one-off distance check only runs to break a tie between beasts
--- that share a zone.
+-- second (see UpdateAuraListening for why that listener is only
+-- live in the relevant zones). Zone + quest completion then narrow
+-- the aura hit down to a beast; a one-off distance check only runs
+-- to break a tie between beasts that share a zone.
 --
 -- Checks are skipped while in combat and re-run once combat ends:
 -- building/showing the overlay while combat lockdown is active is a
@@ -26,6 +27,13 @@ MSC.LureOverlay = LureOverlay
 local listenerFrame
 local overlayFrame
 local pendingRecheck = false
+local auraListenerActive = false
+
+-- The zones beast lures are actually usable in - see UpdateAuraListening.
+local RELEVANT_MAP_IDS = {}
+for _, key in ipairs(MSC.BEASTS) do
+    RELEVANT_MAP_IDS[MSC.BEAST_LOCATION[key].mapID] = true
+end
 
 local function GetLureCount(itemID)
     if not itemID then
@@ -372,10 +380,14 @@ function LureOverlay:ExitEditMode()
         return
     end
     overlayFrame.editModeSelection:Hide()
-    -- Recompute the real state instead of just hiding - covers the
-    -- (rare) case where the player actually has a lure available
-    -- while Edit Mode happens to be open.
-    OnPlayerAurasChanged()
+    if auraListenerActive then
+        -- Recompute the real state instead of just hiding - covers the
+        -- (rare) case where the player actually has a lure available
+        -- while Edit Mode happens to be open.
+        OnPlayerAurasChanged()
+    else
+        overlayFrame:Hide()
+    end
 end
 
 function LureOverlay:ResetPosition()
@@ -393,12 +405,45 @@ local function OnEditModeExit()
     LureOverlay:ExitEditMode()
 end
 
+-- Registers/unregisters UNIT_AURA (and its PLAYER_REGEN_ENABLED
+-- companion) based on whether the player is currently in a zone that
+-- has a beast in it. Safe to call on every zone transition - it's a
+-- no-op unless the relevant-zone state actually flipped. Instances
+-- never carry a beast mapID, so IsInInstance() is a belt-and-braces
+-- check rather than the primary gate.
+local function UpdateAuraListening()
+    if not listenerFrame then
+        return
+    end
+    local mapID = C_Map.GetBestMapForUnit("player")
+    local relevant = mapID ~= nil and RELEVANT_MAP_IDS[mapID] and not IsInInstance()
+
+    if relevant and not auraListenerActive then
+        auraListenerActive = true
+        listenerFrame:RegisterUnitEvent("UNIT_AURA", "player")
+        listenerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        -- Covers the case where listening starts while already
+        -- standing in range with the debuff up.
+        OnPlayerAurasChanged()
+    elseif not relevant and auraListenerActive then
+        auraListenerActive = false
+        pendingRecheck = false
+        listenerFrame:UnregisterEvent("UNIT_AURA")
+        listenerFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        if overlayFrame then
+            overlayFrame:Hide()
+        end
+    end
+end
+
 local function OnEvent(_, event)
     if event == "PLAYER_REGEN_ENABLED" then
         if pendingRecheck then
             pendingRecheck = false
             OnPlayerAurasChanged()
         end
+    elseif event == "PLAYER_ENTERING_WORLD" or event == "ZONE_CHANGED_NEW_AREA" then
+        UpdateAuraListening()
     else
         OnPlayerAurasChanged()
     end
@@ -413,14 +458,14 @@ local function StartListening()
         return
     end
     listenerFrame = CreateFrame("Frame")
-    listenerFrame:RegisterUnitEvent("UNIT_AURA", "player")
-    listenerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+    listenerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+    listenerFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     listenerFrame:SetScript("OnEvent", OnEvent)
     EventRegistry:RegisterCallback("EditMode.Enter", OnEditModeEnter, LureOverlay)
     EventRegistry:RegisterCallback("EditMode.Exit", OnEditModeExit, LureOverlay)
     -- Covers the case where listening starts while already standing
-    -- in range with the debuff up.
-    OnPlayerAurasChanged()
+    -- in one of the relevant zones.
+    UpdateAuraListening()
     -- Covers the case where the feature is turned on (e.g. from
     -- Options) while Edit Mode already happens to be open.
     if EditModeManagerFrame and EditModeManagerFrame:IsEditModeActive() then
@@ -434,6 +479,7 @@ local function StopListening()
         listenerFrame:SetScript("OnEvent", nil)
         listenerFrame = nil
     end
+    auraListenerActive = false
     EventRegistry:UnregisterCallback("EditMode.Enter", LureOverlay)
     EventRegistry:UnregisterCallback("EditMode.Exit", LureOverlay)
     if overlayFrame and overlayFrame.editModeSelection then
