@@ -11,6 +11,7 @@
 ## Notes-koKR: 야수 무두질 일일 처치를 추적하고, 무두질 유인제 제작을 간편하게 해주며, 유인제를 사용할 위치로 이동하도록 도와줍니다.
 ## Notes-zhCN: 追踪野兽剥皮每日击杀，简化剥皮诱饵的制作，并帮助你就位以使用它们。
 ## Notes-zhTW: 追蹤野獸剝皮每日擊殺，簡化剝皮誘餌的製作，並幫助你就位以使用它們。
+## X-Curse-Project-ID: 1647768
 ## Author: Badashi
 ## Version: 1.0.0
 ## SavedVariables: MidnightSkinningCompanionDB
