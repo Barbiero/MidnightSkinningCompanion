@@ -12,7 +12,7 @@ MSC.Locale:Register("deDE", {
     NO_QUESTS_CONFIGURED = "Noch keine Bestien-Tötungen konfiguriert.",
     WAYPOINT_BUTTON = "Wegpunkt",
     NO_BEASTS_CONFIGURED = "Noch keine Bestien zum Häuten konfiguriert.",
-    CRAFT_BUTTON = "Herstellen",
+    CRAFT_BUTTON = "Erstellen",
     CRAFT_TOOLTIP_MISSING_MATERIALS = "Materialien fehlen",
     CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Rezept noch nicht erlernt",
     MSG_REQUIRES_SKINNING = "Dieses Addon erfordert den Beruf Kürschnerei.",

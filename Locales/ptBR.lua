@@ -12,7 +12,7 @@ MSC.Locale:Register("ptBR", {
     NO_QUESTS_CONFIGURED = "Nenhuma morte de besta configurada ainda.",
     WAYPOINT_BUTTON = "Ponto de rota",
     NO_BEASTS_CONFIGURED = "Nenhuma besta de esfolamento configurada ainda.",
-    CRAFT_BUTTON = "Confeccionar",
+    CRAFT_BUTTON = "Criar",
     CRAFT_TOOLTIP_MISSING_MATERIALS = "Faltam materiais",
     CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Receita ainda não aprendida",
     MSG_REQUIRES_SKINNING = "Este addon requer a profissão de Esfolamento.",

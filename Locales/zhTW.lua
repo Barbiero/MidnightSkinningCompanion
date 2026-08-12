@@ -12,7 +12,7 @@ MSC.Locale:Register("zhTW", {
     NO_QUESTS_CONFIGURED = "尚未設定野獸擊殺。",
     WAYPOINT_BUTTON = "路標",
     NO_BEASTS_CONFIGURED = "尚未設定剝皮野獸。",
-    CRAFT_BUTTON = "製作",
+    CRAFT_BUTTON = "製造",
     CRAFT_TOOLTIP_MISSING_MATERIALS = "材料不足",
     CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "尚未學會配方",
     MSG_REQUIRES_SKINNING = "此外掛需要剝皮專業。",

@@ -12,7 +12,7 @@ MSC.Locale:Register("frFR", {
     NO_QUESTS_CONFIGURED = "Aucune mise à mort de bête configurée pour le moment.",
     WAYPOINT_BUTTON = "Point de repère",
     NO_BEASTS_CONFIGURED = "Aucune bête de dépeçage configurée pour le moment.",
-    CRAFT_BUTTON = "Fabriquer",
+    CRAFT_BUTTON = "Créer",
     CRAFT_TOOLTIP_MISSING_MATERIALS = "Matériaux manquants",
     CRAFT_TOOLTIP_RECIPE_NOT_LEARNED = "Recette pas encore apprise",
     MSG_REQUIRES_SKINNING = "Cet addon nécessite le métier Dépeçage.",
