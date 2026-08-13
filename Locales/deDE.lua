@@ -1,6 +1,8 @@
 local ADDON_NAME, MSC = ...
 
-MSC.Locale:Register("deDE", {
+if not MSC.Locale:ShouldLoad("deDE") then return end
+
+MSC.Locale:Register("deDE", function() return {
     OPTIONS_TOOLTIP = "Optionen",
     AVAILABLE_BEASTS = "Verfügbare Bestien",
     SKINNING_LURES = "Kürschnerköder",
@@ -47,4 +49,4 @@ MSC.Locale:Register("deDE", {
         umbrafang = "Umbralfangzahn",
         netherscythe = "Nethersense",
     },
-})
+} end)

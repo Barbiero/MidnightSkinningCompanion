@@ -3,7 +3,7 @@ local ADDON_NAME, MSC = ...
 -- Base locale. Every key MSC.L is ever asked for must exist here -
 -- every other locale file falls back to this one for anything it
 -- doesn't (yet) translate.
-MSC.Locale:Register("enUS", {
+MSC.Locale:Register("enUS", function() return {
     OPTIONS_TOOLTIP = "Options",
     AVAILABLE_BEASTS = "Available Beasts",
     SKINNING_LURES = "Skinning Lures",
@@ -54,4 +54,4 @@ MSC.Locale:Register("enUS", {
         umbrafang = "Umbrafang",
         netherscythe = "Netherscythe",
     },
-})
+} end)

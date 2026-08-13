@@ -1,6 +1,8 @@
 local ADDON_NAME, MSC = ...
 
-MSC.Locale:Register("ruRU", {
+if not MSC.Locale:ShouldLoad("ruRU") then return end
+
+MSC.Locale:Register("ruRU", function() return {
     OPTIONS_TOOLTIP = "Настройки",
     AVAILABLE_BEASTS = "Доступные звери",
     SKINNING_LURES = "Приманки для снятия шкур",
@@ -47,4 +49,4 @@ MSC.Locale:Register("ruRU", {
         umbrafang = "Мракоклык",
         netherscythe = "Коса Пустоты",
     },
-})
+} end)

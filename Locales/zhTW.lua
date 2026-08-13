@@ -1,6 +1,8 @@
 local ADDON_NAME, MSC = ...
 
-MSC.Locale:Register("zhTW", {
+if not MSC.Locale:ShouldLoad("zhTW") then return end
+
+MSC.Locale:Register("zhTW", function() return {
     OPTIONS_TOOLTIP = "選項",
     AVAILABLE_BEASTS = "可尋獵的野獸",
     SKINNING_LURES = "剝皮誘餌",
@@ -47,4 +49,4 @@ MSC.Locale:Register("zhTW", {
         umbrafang = "影牙",
         netherscythe = "虛空之鐮",
     },
-})
+} end)

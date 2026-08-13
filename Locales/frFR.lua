@@ -1,6 +1,8 @@
 local ADDON_NAME, MSC = ...
 
-MSC.Locale:Register("frFR", {
+if not MSC.Locale:ShouldLoad("frFR") then return end
+
+MSC.Locale:Register("frFR", function() return {
     OPTIONS_TOOLTIP = "Options",
     AVAILABLE_BEASTS = "Bêtes disponibles",
     SKINNING_LURES = "Appâts de dépeçage",
@@ -47,4 +49,4 @@ MSC.Locale:Register("frFR", {
         umbrafang = "Ombrecroc",
         netherscythe = "Faux-du-Néant",
     },
-})
+} end)

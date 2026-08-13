@@ -1,6 +1,8 @@
 local ADDON_NAME, MSC = ...
 
-MSC.Locale:Register("koKR", {
+if not MSC.Locale:ShouldLoad("koKR") then return end
+
+MSC.Locale:Register("koKR", function() return {
     OPTIONS_TOOLTIP = "옵션",
     AVAILABLE_BEASTS = "사냥 가능한 야수",
     SKINNING_LURES = "무두질 유인제",
@@ -47,4 +49,4 @@ MSC.Locale:Register("koKR", {
         umbrafang = "암영송곳니",
         netherscythe = "황천낫",
     },
-})
+} end)
