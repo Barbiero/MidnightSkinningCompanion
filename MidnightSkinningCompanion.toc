@@ -1,4 +1,4 @@
-## Interface: 120007, 120100
+## Interface: 120007, 120100, 120105
 ## Title: Midnight Skinning Companion
 ## Notes: Tracks beast skinning daily kills, simplifies crafting skinning lures, and helps you get in position to use them.
 ## Notes-deDE: Verfolgt die täglichen Häutungs-Tötungen von Bestien, vereinfacht das Herstellen von Häutungsködern und hilft dir, dich für ihren Einsatz in Position zu bringen.
